@@ -5,6 +5,9 @@ using System.Text;
 using System.Timers;
 using System.ComponentModel;
 
+// TODO: Lepsze sprawdzanie połączenia (W nowym Timerze?)
+// TODO: Spróbować poprawnie rozłączyć połączenie (Żeby w Herculesie pokazywał, że klient został rozłączony)
+
 namespace MobileRobots
 {
     public partial class Form : System.Windows.Forms.Form
