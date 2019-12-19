@@ -43,6 +43,9 @@
             this.BTNIsConnected = new System.Windows.Forms.Button();
             this.Eng_R = new System.Windows.Forms.TrackBar();
             this.Eng_L = new System.Windows.Forms.TrackBar();
+            this.Battery_Label = new System.Windows.Forms.Label();
+            this.BTNLog = new System.Windows.Forms.Button();
+            this.BTNSettings = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.Eng_R)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Eng_L)).BeginInit();
             this.SuspendLayout();
@@ -50,9 +53,9 @@
             // BTNConnect
             // 
             this.BTNConnect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BTNConnect.Location = new System.Drawing.Point(191, 10);
+            this.BTNConnect.Location = new System.Drawing.Point(191, 9);
             this.BTNConnect.Name = "BTNConnect";
-            this.BTNConnect.Size = new System.Drawing.Size(75, 23);
+            this.BTNConnect.Size = new System.Drawing.Size(75, 25);
             this.BTNConnect.TabIndex = 0;
             this.BTNConnect.Text = "Connect";
             this.BTNConnect.UseVisualStyleBackColor = true;
@@ -62,9 +65,9 @@
             // 
             this.BTNDisconnect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BTNDisconnect.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.BTNDisconnect.Location = new System.Drawing.Point(286, 10);
+            this.BTNDisconnect.Location = new System.Drawing.Point(272, 9);
             this.BTNDisconnect.Name = "BTNDisconnect";
-            this.BTNDisconnect.Size = new System.Drawing.Size(75, 23);
+            this.BTNDisconnect.Size = new System.Drawing.Size(75, 25);
             this.BTNDisconnect.TabIndex = 1;
             this.BTNDisconnect.Text = "Disconnect";
             this.BTNDisconnect.UseVisualStyleBackColor = true;
@@ -84,12 +87,12 @@
             // 
             this.LogBOX.AcceptsTab = true;
             this.LogBOX.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.LogBOX.Location = new System.Drawing.Point(191, 179);
+            this.LogBOX.Location = new System.Drawing.Point(191, 63);
             this.LogBOX.Multiline = true;
             this.LogBOX.Name = "LogBOX";
             this.LogBOX.ReadOnly = true;
             this.LogBOX.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.LogBOX.Size = new System.Drawing.Size(597, 243);
+            this.LogBOX.Size = new System.Drawing.Size(597, 354);
             this.LogBOX.TabIndex = 3;
             this.LogBOX.WordWrap = false;
             this.LogBOX.TextChanged += new System.EventHandler(this.LogBOX_TextChanged);
@@ -98,32 +101,36 @@
             // 
             this.LED_G.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.LED_G.AutoSize = true;
-            this.LED_G.Location = new System.Drawing.Point(79, 38);
+            this.LED_G.BackColor = System.Drawing.SystemColors.Control;
+            this.LED_G.Location = new System.Drawing.Point(67, 40);
             this.LED_G.Name = "LED_G";
-            this.LED_G.Size = new System.Drawing.Size(61, 17);
+            this.LED_G.Size = new System.Drawing.Size(64, 17);
             this.LED_G.TabIndex = 4;
-            this.LED_G.Text = "LED_G";
-            this.LED_G.UseVisualStyleBackColor = true;
+            this.LED_G.Text = "GREEN";
+            this.LED_G.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.LED_G.UseVisualStyleBackColor = false;
             this.LED_G.CheckedChanged += new System.EventHandler(this.Led_G_CheckedChanged);
             // 
             // LED_R
             // 
             this.LED_R.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.LED_R.AutoSize = true;
-            this.LED_R.Location = new System.Drawing.Point(12, 38);
+            this.LED_R.BackColor = System.Drawing.SystemColors.Control;
+            this.LED_R.Location = new System.Drawing.Point(12, 40);
             this.LED_R.Name = "LED_R";
-            this.LED_R.Size = new System.Drawing.Size(61, 17);
+            this.LED_R.Size = new System.Drawing.Size(49, 17);
             this.LED_R.TabIndex = 5;
-            this.LED_R.Text = "LED_R";
-            this.LED_R.UseVisualStyleBackColor = true;
+            this.LED_R.Text = "RED";
+            this.LED_R.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.LED_R.UseVisualStyleBackColor = false;
             this.LED_R.CheckedChanged += new System.EventHandler(this.LED_R_CheckedChanged);
             // 
             // BatteryLevel
             // 
             this.BatteryLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BatteryLevel.Location = new System.Drawing.Point(688, 10);
+            this.BatteryLevel.Location = new System.Drawing.Point(625, 10);
             this.BatteryLevel.Name = "BatteryLevel";
-            this.BatteryLevel.Size = new System.Drawing.Size(100, 23);
+            this.BatteryLevel.Size = new System.Drawing.Size(163, 23);
             this.BatteryLevel.Step = 1;
             this.BatteryLevel.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             this.BatteryLevel.TabIndex = 6;
@@ -133,7 +140,7 @@
             // BTNLogClear
             // 
             this.BTNLogClear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BTNLogClear.Location = new System.Drawing.Point(12, 415);
+            this.BTNLogClear.Location = new System.Drawing.Point(12, 423);
             this.BTNLogClear.Name = "BTNLogClear";
             this.BTNLogClear.Size = new System.Drawing.Size(75, 23);
             this.BTNLogClear.TabIndex = 7;
@@ -157,7 +164,7 @@
             // BTNSend
             // 
             this.BTNSend.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BTNSend.Location = new System.Drawing.Point(530, 10);
+            this.BTNSend.Location = new System.Drawing.Point(512, 10);
             this.BTNSend.Name = "BTNSend";
             this.BTNSend.Size = new System.Drawing.Size(75, 23);
             this.BTNSend.TabIndex = 9;
@@ -168,17 +175,18 @@
             // CMDBox
             // 
             this.CMDBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.CMDBox.Location = new System.Drawing.Point(385, 12);
-            this.CMDBox.MaxLength = 12;
+            this.CMDBox.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
+            this.CMDBox.Location = new System.Drawing.Point(363, 12);
+            this.CMDBox.MaxLength = 6;
             this.CMDBox.Name = "CMDBox";
-            this.CMDBox.Size = new System.Drawing.Size(139, 20);
+            this.CMDBox.Size = new System.Drawing.Size(134, 20);
             this.CMDBox.TabIndex = 10;
             this.CMDBox.TextChanged += new System.EventHandler(this.CMDBox_TextChanged);
             // 
             // BTNIsConnected
             // 
             this.BTNIsConnected.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BTNIsConnected.Location = new System.Drawing.Point(98, 415);
+            this.BTNIsConnected.Location = new System.Drawing.Point(98, 423);
             this.BTNIsConnected.Name = "BTNIsConnected";
             this.BTNIsConnected.Size = new System.Drawing.Size(75, 23);
             this.BTNIsConnected.TabIndex = 11;
@@ -189,24 +197,59 @@
             // Eng_R
             // 
             this.Eng_R.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Eng_R.Location = new System.Drawing.Point(12, 128);
+            this.Eng_R.Location = new System.Drawing.Point(67, 63);
             this.Eng_R.Maximum = 255;
             this.Eng_R.Name = "Eng_R";
-            this.Eng_R.Size = new System.Drawing.Size(776, 45);
+            this.Eng_R.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.Eng_R.Size = new System.Drawing.Size(45, 354);
             this.Eng_R.TabIndex = 12;
+            this.Eng_R.TickFrequency = 20;
             this.Eng_R.Value = 128;
             this.Eng_R.Scroll += new System.EventHandler(this.Eng_R_Scroll);
             // 
             // Eng_L
             // 
             this.Eng_L.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Eng_L.Location = new System.Drawing.Point(12, 77);
+            this.Eng_L.Location = new System.Drawing.Point(16, 63);
             this.Eng_L.Maximum = 255;
             this.Eng_L.Name = "Eng_L";
-            this.Eng_L.Size = new System.Drawing.Size(776, 45);
+            this.Eng_L.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.Eng_L.RightToLeftLayout = true;
+            this.Eng_L.Size = new System.Drawing.Size(45, 354);
             this.Eng_L.TabIndex = 13;
+            this.Eng_L.TickFrequency = 20;
             this.Eng_L.Value = 128;
             this.Eng_L.Scroll += new System.EventHandler(this.Eng_L_Scroll);
+            // 
+            // Battery_Label
+            // 
+            this.Battery_Label.Location = new System.Drawing.Point(625, 36);
+            this.Battery_Label.Name = "Battery_Label";
+            this.Battery_Label.Size = new System.Drawing.Size(163, 13);
+            this.Battery_Label.TabIndex = 14;
+            this.Battery_Label.Text = "Battery Level";
+            this.Battery_Label.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.Battery_Label.Click += new System.EventHandler(this.Battery_Label_Click);
+            // 
+            // BTNLog
+            // 
+            this.BTNLog.Location = new System.Drawing.Point(544, 423);
+            this.BTNLog.Name = "BTNLog";
+            this.BTNLog.Size = new System.Drawing.Size(75, 23);
+            this.BTNLog.TabIndex = 15;
+            this.BTNLog.Text = "Show Logs";
+            this.BTNLog.UseVisualStyleBackColor = true;
+            this.BTNLog.Click += new System.EventHandler(this.BTNLog_Click);
+            // 
+            // BTNSettings
+            // 
+            this.BTNSettings.Location = new System.Drawing.Point(625, 423);
+            this.BTNSettings.Name = "BTNSettings";
+            this.BTNSettings.Size = new System.Drawing.Size(75, 23);
+            this.BTNSettings.TabIndex = 16;
+            this.BTNSettings.Text = "Settings";
+            this.BTNSettings.UseVisualStyleBackColor = true;
+            this.BTNSettings.Click += new System.EventHandler(this.BTNSettings_Click);
             // 
             // Form
             // 
@@ -215,6 +258,9 @@
             this.BackColor = System.Drawing.SystemColors.Control;
             this.CancelButton = this.BTNDisconnect;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.BTNSettings);
+            this.Controls.Add(this.BTNLog);
+            this.Controls.Add(this.Battery_Label);
             this.Controls.Add(this.Eng_L);
             this.Controls.Add(this.Eng_R);
             this.Controls.Add(this.BTNIsConnected);
@@ -229,6 +275,7 @@
             this.Controls.Add(this.IPBox);
             this.Controls.Add(this.BTNDisconnect);
             this.Controls.Add(this.BTNConnect);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form";
             this.Text = "Robot Control";
@@ -256,6 +303,9 @@
         private System.Windows.Forms.Button BTNIsConnected;
         private System.Windows.Forms.TrackBar Eng_R;
         private System.Windows.Forms.TrackBar Eng_L;
+        private System.Windows.Forms.Label Battery_Label;
+        private System.Windows.Forms.Button BTNLog;
+        private System.Windows.Forms.Button BTNSettings;
     }
 }
 

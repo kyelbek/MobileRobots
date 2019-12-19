@@ -14,6 +14,10 @@ namespace MobileRobots
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Do naprawienia zadania Timera, ze względu na to, że startuje w innym threadzie i jego wartości są nie do końca widoczne.
+        /// </summary>
+ 
         // Inicjalizacja łączności i Timera
         private static TcpClient client;
         private static NetworkStream stream;
@@ -46,6 +50,7 @@ namespace MobileRobots
 
         private void Timer1Event(Object source, ElapsedEventArgs e)
         {
+            //TODO: Trzeba wymyślić coś innego
             Form_Control_Frame(Globals.LED, Globals.ENG_L, Globals.ENG_R);
         }
 
@@ -147,17 +152,17 @@ namespace MobileRobots
         {
             try
             {
-                // TODO: Wyjątek -> host = cos poprawnego -> Connect
+                // TODO: Wyjątek -> host = cos poprawnego -> Connect (Kontrolki edytowane z threadu Timera1 = BAD)
                 byte[] msg_s = Encoding.ASCII.GetBytes(msg);          
                 stream.Write(msg_s, 0, msg_s.Length);
-                LogBOX.Text += "Sent: " + msg;
-                LogBOX.AppendText(Environment.NewLine);
+                //LogBOX.Text += "Sent: " + msg;
+                //LogBOX.AppendText(Environment.NewLine);
                 Byte[] msg_r = new Byte[256];
                 String response = String.Empty;
                 Int32 bytes = stream.Read(msg_r, 0, msg_r.Length);
                 response = Encoding.ASCII.GetString(msg_r, 0, msg_r.Length);
-                LogBOX.Text += "Received: " + response;
-                LogBOX.AppendText(Environment.NewLine);
+                //LogBOX.Text += "Received: " + response;
+                //LogBOX.AppendText(Environment.NewLine);
             }
             catch (NullReferenceException)
             {
@@ -281,7 +286,7 @@ namespace MobileRobots
 
         private void BTNSend_Click(object sender, EventArgs e)
         {
-            SendReceive(CMDBox.Text);
+            SendReceive("[" + CMDBox.Text + "]");
         }
 
         private void CMDBox_TextChanged(object sender, EventArgs e)
@@ -292,12 +297,10 @@ namespace MobileRobots
         private void Eng_L_Scroll(object sender, EventArgs e)
         {
             Globals.ENG_L = Eng_L.Value.ToString("X2");
-            Globals.ENG_R = Eng_R.Value.ToString("X2");
         }
 
         private void Eng_R_Scroll(object sender, EventArgs e)
         {
-            Globals.ENG_L = Eng_L.Value.ToString("X2");
             Globals.ENG_R = Eng_R.Value.ToString("X2");
         }
 
@@ -318,7 +321,26 @@ namespace MobileRobots
             LogBOX.AppendText(Environment.NewLine);
             IsConnected();
         }
-            
+
+        private void BTNLog_Click(object sender, EventArgs e)
+        {
+            if (LogBOX.Visible == true)
+            {
+                LogBOX.Visible = false;
+                LogBOX.Enabled = false;
+            }
+            else
+            {
+                LogBOX.Visible = true;
+                LogBOX.Enabled = true;
+            }
+        }
+
+        private void BTNSettings_Click(object sender, EventArgs e)
+        {
+
+        }
+
 
         // Useless
         private void StatusLabel_Click(object sender, EventArgs e)
@@ -338,6 +360,10 @@ namespace MobileRobots
 
         }
         private void LED_R_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+        private void Battery_Label_Click(object sender, EventArgs e)
         {
 
         }
