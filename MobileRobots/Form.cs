@@ -12,16 +12,15 @@ namespace MobileRobots
         public Form()
         {
             InitializeComponent();
+            //TODO: Tymczasowe rozwiązanie odnośnie wyjątku w wierszu 52 i 154
+            CheckForIllegalCrossThreadCalls = false;
         }
 
-        /// <summary>
-        /// Do naprawienia zadania Timera, ze względu na to, że startuje w innym threadzie i jego wartości są nie do końca widoczne.
-        /// </summary>
- 
         // Inicjalizacja łączności i Timera
         private static TcpClient client;
         private static NetworkStream stream;
         private static Timer Timer1;
+
 
         // Zmienne globalne i wartości podstawowe
         public class Globals
@@ -155,14 +154,14 @@ namespace MobileRobots
                 // TODO: Wyjątek -> host = cos poprawnego -> Connect (Kontrolki edytowane z threadu Timera1 = BAD)
                 byte[] msg_s = Encoding.ASCII.GetBytes(msg);          
                 stream.Write(msg_s, 0, msg_s.Length);
-                //LogBOX.Text += "Sent: " + msg;
-                //LogBOX.AppendText(Environment.NewLine);
+                LogBOX.Text += "Sent: " + msg;
+                LogBOX.AppendText(Environment.NewLine);
                 Byte[] msg_r = new Byte[256];
                 String response = String.Empty;
                 Int32 bytes = stream.Read(msg_r, 0, msg_r.Length);
                 response = Encoding.ASCII.GetString(msg_r, 0, msg_r.Length);
-                //LogBOX.Text += "Received: " + response;
-                //LogBOX.AppendText(Environment.NewLine);
+                LogBOX.Text += "Received: " + response;
+                LogBOX.AppendText(Environment.NewLine);
             }
             catch (NullReferenceException)
             {
