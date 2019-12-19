@@ -3,17 +3,15 @@ using System.Drawing;
 using System.Net.Sockets;
 using System.Text;
 using System.Timers;
+using System.ComponentModel;
 
 namespace MobileRobots
 {
     public partial class Form : System.Windows.Forms.Form
     {
-        // Inicjalizacja okna
         public Form()
         {
             InitializeComponent();
-            //TODO: Tymczasowe rozwiązanie odnośnie wyjątku w wierszu 52 i 154
-            CheckForIllegalCrossThreadCalls = false;
         }
 
         // Inicjalizacja łączności i Timera
@@ -21,14 +19,13 @@ namespace MobileRobots
         private static NetworkStream stream;
         private static Timer Timer1;
 
-
         // Zmienne globalne i wartości podstawowe
         public class Globals
         {
             public const Int32 port = 8000;
             public const double time = 500;
             public static String IPAddr;
-            public static String CMD = "[000000]";
+            public static String CMD;
             public static String LED = "00";
             public static String ENG_L = "00";
             public static String ENG_R = "00";
@@ -36,21 +33,18 @@ namespace MobileRobots
             public static String msg_buffer_r;
         }
 
-
-
         // Deklaracja Timera działającego w trakcie aktywnego połączenia
         private void SetTimer(double time)
         {
             Timer1 = new Timer(time);
-            Timer1.Elapsed += Timer1Event;
+            Timer1.Elapsed += Timer1_Event;
             Timer1.AutoReset = true;
             Timer1.Enabled = true;
         }
-
-        private void Timer1Event(Object source, ElapsedEventArgs e)
+        // Instrukcje wykonywane po przepełnieniu Timer1
+        private void Timer1_Event(Object source, ElapsedEventArgs e)
         {
-            //TODO: Trzeba wymyślić coś innego
-            Form_Control_Frame(Globals.LED, Globals.ENG_L, Globals.ENG_R);
+            Build_ControlFrame(Globals.LED,Globals.ENG_L, Globals.ENG_R);
         }
 
         // Funkcje
@@ -60,33 +54,30 @@ namespace MobileRobots
             {
                 try
                 {
-                    client = new TcpClient
-                    {
-                        SendTimeout = 1000
-                    };
+                    client = new TcpClient { SendTimeout = 1000 };
                     client.Connect(IP, port);
                     stream = client.GetStream();
                     IsConnected();
                     if (IsConnected() == true)
                     {
+                        // TODO: ---> Włączanie/Wyłączanie zegara
                         SetTimer(Globals.time);
                     }
-
-                }
-                catch (ArgumentNullException ex)
-                {
-                    LogBOX.Text += "ArgumentNullException: " + ex;
-                    LogBOX.AppendText(Environment.NewLine);
                 }
                 catch (SocketException ex)
                 {
-                    LogBOX.Text += ex.Message;
+                    LogBOX.AppendText(ex.Message);
                     LogBOX.AppendText(Environment.NewLine);
                 }
+                //catch (ArgumentNullException ex)
+                //{
+                //    LogBOX.AppendText("ArgumentNullException: " + ex);
+                //    LogBOX.AppendText(Environment.NewLine);
+                //}
             }
             else
             {
-                LogBOX.Text += "Enter IP Address first.";
+                LogBOX.AppendText("Enter IP Address first.");
                 LogBOX.AppendText(Environment.NewLine);
             }
         }
@@ -99,81 +90,41 @@ namespace MobileRobots
                 client.Dispose();
                 stream.Close();
                 stream.Dispose();
-                IsConnected();
                 Timer1.Stop();
                 Timer1.Dispose();
+                IsConnected();
             } else 
             {
-                LogBOX.Text += "Not connected.";
+                LogBOX.AppendText("Not connected.");
                 LogBOX.AppendText(Environment.NewLine);
             }
         }
 
-        //private void Send(string message)
-        //{
-        //    try
-        //    {
-        //        message = Convert.ToString(CMDBox.Text);
-        //        Byte[] data = Encoding.ASCII.GetBytes(message);
-        //        stream.Write(data, 0, data.Length);
-        //        LogBOX.Text += "Sent: " + message + "\n";
-        //        LogBOX.Text += "Length: " + Convert.ToString(data.Length);
-        //        LogBOX.AppendText(Environment.NewLine);
-        //    }
-        //    catch (NullReferenceException)
-        //    {
-        //        LogBOX.Text += "Not connected.";
-        //        LogBOX.AppendText(Environment.NewLine);
-        //    }
-        //}
-
-        //private void Receive()
-        //{
-        //    try
-        //    {
-        //        Byte[] data = new Byte[256];
-        //        String response = String.Empty;
-        //        Int32 bytes = stream.Read(data, 0, data.Length);
-        //        response = Encoding.ASCII.GetString(data, 0, data.Length);
-        //        LogBOX.Text += "Received: " + response;
-        //        LogBOX.Text += "Length: " + Convert.ToString(data.Length);
-        //        LogBOX.AppendText(Environment.NewLine);
-        //    }
-        //    catch (NullReferenceException)
-        //    {
-        //        LogBOX.AppendText("Not connected.");
-        //        LogBOX.AppendText(Environment.NewLine);
-        //    }
-        //}
-
-        // Scalenie komunikacji
-        private void SendReceive(string msg)
+        // Wysylanie i odbieranie ramek
+        private string SendReceive(string msg)
         {
             try
             {
-                // TODO: Wyjątek -> host = cos poprawnego -> Connect (Kontrolki edytowane z threadu Timera1 = BAD)
-                byte[] msg_s = Encoding.ASCII.GetBytes(msg);          
+                byte[] msg_s = Encoding.ASCII.GetBytes(msg);
                 stream.Write(msg_s, 0, msg_s.Length);
-                LogBOX.Text += "Sent: " + msg;
-                LogBOX.AppendText(Environment.NewLine);
+                Invoke("Sent: " + msg);
                 Byte[] msg_r = new Byte[256];
                 String response = String.Empty;
                 Int32 bytes = stream.Read(msg_r, 0, msg_r.Length);
                 response = Encoding.ASCII.GetString(msg_r, 0, msg_r.Length);
-                LogBOX.Text += "Received: " + response;
-                LogBOX.AppendText(Environment.NewLine);
-            }
-            catch (NullReferenceException)
-            {
-                LogBOX.Text += "Cannot connect. Have you entered IP Address?";
-                LogBOX.AppendText(Environment.NewLine);
+                Invoke("  Received: " + response);
+                Invoke(Environment.NewLine);
+                return response;
             }
             catch (System.IO.IOException)
             {
-                LogBOX.Text += "Cannot communicate with host. Are you connected?";
-                LogBOX.AppendText(Environment.NewLine);
+                Invoke(Environment.NewLine);
+                Invoke("Connection interrupted.");
+                Invoke(Environment.NewLine);
+                Timer1.Stop();
+                Timer1.Dispose();
+                return null;
             }
-
         }
 
         private bool IsConnected()
@@ -201,50 +152,64 @@ namespace MobileRobots
             }
             catch (NullReferenceException)
             {
+                IPBox.Enabled = true;
                 return false;
             }
         }
         
-        private void Form_Control_Frame(string LED, string ENG_L, string ENG_R)
+        private void Build_ControlFrame(string LED, string ENG_L, string ENG_R)
         {
-            if (LED_G.Checked & LED_R.Checked)
-            {
-                LED = "03";
-            }
-            else if (LED_G.Checked)
-            {
-                LED = "01";
-            }
-            else if (LED_R.Checked)
-            {
-                LED = "02";
-            }
-            else
-            {
-                LED = "00";
-            }
+            if (LED_G.Checked & LED_R.Checked) { LED = "03"; }
+            else if (LED_G.Checked) { LED = "01"; }
+            else if (LED_R.Checked) { LED = "02"; }
+            else { LED = "00"; }
             Globals.msg_buffer_s = "[" + LED + ENG_L + ENG_R + "]";
-            SendReceive(Globals.msg_buffer_s);
+            Globals.msg_buffer_r = SendReceive(Globals.msg_buffer_s);
         }
 
-        // Obiekty w Form
-        //
-        //
+        // Dzięki tej metodzie jesteśmy w stanie edytować kontrolkę LogBOX z poziomu innego threadu niż ten, w którym została utworzona (Timer1) bez potencjalnych kolizji i nieprzewidzianych skutków
+        // https://stackoverflow.com/questions/13345091/is-it-safe-just-to-set-checkforillegalcrossthreadcalls-to-false-to-avoid-cross-t
+        // W przypadku tego programu nieprzewidziane skutki objawiały się jako przemieszane ze sobą dane "Sent: XX  Received: XX", np. "S   Received:XXent:XX"
+
+        // TODO: ---> Invoker
+        void Invoke(string str)
+        {
+            if (LogBOX.InvokeRequired)
+                LogBOX.Invoke(new Action<string>(Invoke), str);
+            else
+                LogBOX.AppendText(str);
+        }
+
+        // Kontrolki z Form
+        // TODO: ---> Parametry Form_Load
         private void Form_Load(object sender, EventArgs e)
         {
-            //IPBox.Text = "192.168.2.2";
+            IPBox.Text = "192.168.2.2";
             Eng_L.Enabled = false;
             Eng_R.Enabled = false;
             CMDBox.Enabled = false;
+            CMDBox.Visible = true;
             BTNSend.Enabled = false;
+            BTNSend.Visible = true;
         }
 
-        private void Form_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Form_Closing(object sender, CancelEventArgs e)
         {
                 client.Close();
                 stream.Close();
                 Timer1.Stop();
                 Timer1.Dispose();
+        }
+
+        // TODO ---> STOP AWARYJNY
+        private void BTNSTOP_Click(object sender, EventArgs e)
+        {
+            Globals.ENG_L = "00";
+            Globals.ENG_R = "00";
+            Eng_L.Value = 128;
+            Eng_R.Value = 128;
+            LED_G.Checked = false;
+            LED_R.Checked = true;
         }
 
         private void ClearLogBTN_Click(object sender, EventArgs e)
@@ -254,20 +219,22 @@ namespace MobileRobots
 
         private void BTNConnect_Click(object sender, EventArgs e)
         {
+            Globals.IPAddr = IPBox.Text;
             if(IsConnected() == true)
             {
-                LogBOX.Text += "Disconnect before trying to connect again.";
+                LogBOX.AppendText("Disconnect before trying to connect again.");
                 LogBOX.AppendText(Environment.NewLine);
             }
             else
             {
-                if (IPBox.Text != null)
+                if (IPBox.Text != "")
                 {
                     Connect(Globals.IPAddr, Globals.port);
                 }
                 else
                 {
-                    LogBOX.Text += "Error. Make sure you entered proper IP and host is reachable.";
+                    LogBOX.AppendText("Error. Make sure you entered proper IP address and host is reachable.");
+                    LogBOX.AppendText(Environment.NewLine);
                 }
 
             }
@@ -280,7 +247,7 @@ namespace MobileRobots
 
         private void IPBox_TextChanged(object sender, EventArgs e)
         {
-            Globals.IPAddr = Convert.ToString(IPBox.Text);
+            Globals.IPAddr = IPBox.Text;
         }
 
         private void BTNSend_Click(object sender, EventArgs e)
@@ -309,16 +276,15 @@ namespace MobileRobots
         {
             if (client == null)
             {
-                LogBOX.Text += "Connected:" + "False";
-                
+                LogBOX.AppendText("Connected:" + "False");               
             }
             else
             {
-                LogBOX.Text += "Connected:" + client.Connected;
+                IsConnected();
+                LogBOX.AppendText("Connected:" + client.Connected);
             }
-
             LogBOX.AppendText(Environment.NewLine);
-            IsConnected();
+            
         }
 
         private void BTNLog_Click(object sender, EventArgs e)
@@ -341,6 +307,7 @@ namespace MobileRobots
         }
 
 
+
         // Useless
         private void StatusLabel_Click(object sender, EventArgs e)
         {
@@ -352,7 +319,7 @@ namespace MobileRobots
         }
         private void LogBOX_TextChanged(object sender, EventArgs e)
         {
-            
+            CMDBox.Text = Globals.msg_buffer_s;
         }
         private void Led_G_CheckedChanged(object sender, EventArgs e)
         {

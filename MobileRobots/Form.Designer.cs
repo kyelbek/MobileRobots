@@ -46,6 +46,7 @@
             this.Battery_Label = new System.Windows.Forms.Label();
             this.BTNLog = new System.Windows.Forms.Button();
             this.BTNSettings = new System.Windows.Forms.Button();
+            this.BTNSTOP = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.Eng_R)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Eng_L)).BeginInit();
             this.SuspendLayout();
@@ -251,13 +252,25 @@
             this.BTNSettings.UseVisualStyleBackColor = true;
             this.BTNSettings.Click += new System.EventHandler(this.BTNSettings_Click);
             // 
+            // BTNSTOP
+            // 
+            this.BTNSTOP.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.BTNSTOP.Location = new System.Drawing.Point(191, 423);
+            this.BTNSTOP.Name = "BTNSTOP";
+            this.BTNSTOP.Size = new System.Drawing.Size(75, 23);
+            this.BTNSTOP.TabIndex = 17;
+            this.BTNSTOP.Text = "STOP (ESC)";
+            this.BTNSTOP.UseVisualStyleBackColor = true;
+            this.BTNSTOP.Click += new System.EventHandler(this.BTNSTOP_Click);
+            // 
             // Form
             // 
             this.AcceptButton = this.BTNConnect;
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.CancelButton = this.BTNDisconnect;
+            this.CancelButton = this.BTNSTOP;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.BTNSTOP);
             this.Controls.Add(this.BTNSettings);
             this.Controls.Add(this.BTNLog);
             this.Controls.Add(this.Battery_Label);
@@ -306,6 +319,7 @@
         private System.Windows.Forms.Label Battery_Label;
         private System.Windows.Forms.Button BTNLog;
         private System.Windows.Forms.Button BTNSettings;
+        private System.Windows.Forms.Button BTNSTOP;
     }
 }
 
