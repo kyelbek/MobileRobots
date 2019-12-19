@@ -159,7 +159,7 @@
             this.StatusLabel.Size = new System.Drawing.Size(73, 13);
             this.StatusLabel.TabIndex = 8;
             this.StatusLabel.Text = "Disconnected";
-            this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.StatusLabel.Click += new System.EventHandler(this.StatusLabel_Click);
             // 
             // BTNSend

@@ -209,7 +209,7 @@ namespace MobileRobots
             Eng_L.Value = 128;
             Eng_R.Value = 128;
             LED_G.Checked = false;
-            LED_R.Checked = true;
+            LED_R.Checked = false;
         }
 
         private void ClearLogBTN_Click(object sender, EventArgs e)
@@ -283,8 +283,7 @@ namespace MobileRobots
                 IsConnected();
                 LogBOX.AppendText("Connected:" + client.Connected);
             }
-            LogBOX.AppendText(Environment.NewLine);
-            
+            LogBOX.AppendText(Environment.NewLine);     
         }
 
         private void BTNLog_Click(object sender, EventArgs e)
