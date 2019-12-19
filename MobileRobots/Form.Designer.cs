@@ -61,6 +61,7 @@
             // BTNDisconnect
             // 
             this.BTNDisconnect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.BTNDisconnect.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.BTNDisconnect.Location = new System.Drawing.Point(286, 10);
             this.BTNDisconnect.Name = "BTNDisconnect";
             this.BTNDisconnect.Size = new System.Drawing.Size(75, 23);
@@ -209,8 +210,10 @@
             // 
             // Form
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AcceptButton = this.BTNConnect;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+            this.BackColor = System.Drawing.SystemColors.Control;
+            this.CancelButton = this.BTNDisconnect;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.Eng_L);
             this.Controls.Add(this.Eng_R);
