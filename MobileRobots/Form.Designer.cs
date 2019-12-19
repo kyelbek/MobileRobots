@@ -190,22 +190,22 @@
             // 
             this.Eng_R.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.Eng_R.Location = new System.Drawing.Point(12, 128);
-            this.Eng_R.Maximum = 127;
-            this.Eng_R.Minimum = -128;
+            this.Eng_R.Maximum = 255;
             this.Eng_R.Name = "Eng_R";
             this.Eng_R.Size = new System.Drawing.Size(776, 45);
             this.Eng_R.TabIndex = 12;
+            this.Eng_R.Value = 128;
             this.Eng_R.Scroll += new System.EventHandler(this.Eng_R_Scroll);
             // 
             // Eng_L
             // 
             this.Eng_L.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.Eng_L.Location = new System.Drawing.Point(12, 77);
-            this.Eng_L.Maximum = 127;
-            this.Eng_L.Minimum = -128;
+            this.Eng_L.Maximum = 255;
             this.Eng_L.Name = "Eng_L";
             this.Eng_L.Size = new System.Drawing.Size(776, 45);
             this.Eng_L.TabIndex = 13;
+            this.Eng_L.Value = 128;
             this.Eng_L.Scroll += new System.EventHandler(this.Eng_L_Scroll);
             // 
             // Form
