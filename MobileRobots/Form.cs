@@ -29,9 +29,9 @@ namespace MobileRobots
             public const double time = 500;
             public static String IPAddr;
             public static String CMD;
-            public static String LED = "00";
-            public static String ENG_L = "00";
-            public static String ENG_R = "00";
+            public static String LED;
+            public static int ENG_L;
+            public static int ENG_R;
             public static String msg_buffer_s;
             public static String msg_buffer_r;
         }
@@ -160,13 +160,13 @@ namespace MobileRobots
             }
         }
         
-        private void Build_ControlFrame(string LED, string ENG_L, string ENG_R)
+        private void Build_ControlFrame(string LED, int ENG_L, int ENG_R)
         {
             if (LED_G.Checked & LED_R.Checked) { LED = "03"; }
             else if (LED_G.Checked) { LED = "01"; }
             else if (LED_R.Checked) { LED = "02"; }
             else { LED = "00"; }
-            Globals.msg_buffer_s = "[" + LED + ENG_L + ENG_R + "]";
+            Globals.msg_buffer_s = "[" + LED + IntToSigHEX(ENG_L) + IntToSigHEX(ENG_R) + "]";
             Globals.msg_buffer_r = SendReceive(Globals.msg_buffer_s);
         }
 
@@ -183,6 +183,13 @@ namespace MobileRobots
                 LogBOX.AppendText(str);
         }
 
+        // TODO: ---> Konwersja do Signed HEX
+        public static string IntToSigHEX(int integer)
+        {
+            byte[] inbyte = new byte[] { (byte)((sbyte)integer) };
+            return BitConverter.ToString(inbyte).Replace("-", "");
+        }
+
         // Kontrolki z Form
         // TODO: ---> Parametry Form_Load
         private void Form_Load(object sender, EventArgs e)
@@ -194,6 +201,9 @@ namespace MobileRobots
             CMDBox.Visible = true;
             BTNSend.Enabled = false;
             BTNSend.Visible = true;
+            LogBOX.Visible = false;
+            LogBOX.Enabled = false;
+            BTNLogClear.Visible = false;
         }
 
         private void Form_Closing(object sender, CancelEventArgs e)
@@ -207,10 +217,10 @@ namespace MobileRobots
         // TODO ---> STOP AWARYJNY
         private void BTNSTOP_Click(object sender, EventArgs e)
         {
-            Globals.ENG_L = "00";
-            Globals.ENG_R = "00";
-            Eng_L.Value = 128;
-            Eng_R.Value = 128;
+            Globals.ENG_L = 0;
+            Globals.ENG_R = 0;
+            Eng_L.Value = 0;
+            Eng_R.Value = 0;
             LED_G.Checked = false;
             LED_R.Checked = false;
         }
@@ -265,12 +275,13 @@ namespace MobileRobots
 
         private void Eng_L_Scroll(object sender, EventArgs e)
         {
-            Globals.ENG_L = Eng_L.Value.ToString("X2");
+            // Globals.ENG_L = Convert.ToInt32(Eng_L.Value);
+            Globals.ENG_L = Eng_L.Value;
         }
 
         private void Eng_R_Scroll(object sender, EventArgs e)
         {
-            Globals.ENG_R = Eng_R.Value.ToString("X2");
+            Globals.ENG_R = Convert.ToInt32(Eng_R.Value);
         }
 
         // Test
@@ -295,11 +306,15 @@ namespace MobileRobots
             {
                 LogBOX.Visible = false;
                 LogBOX.Enabled = false;
+                BTNLogClear.Visible = false;
+                BTNLog.Text = "Log";
             }
             else
             {
                 LogBOX.Visible = true;
                 LogBOX.Enabled = true;
+                BTNLogClear.Visible = true;
+                BTNLog.Text = "Sensors";
             }
         }
 
@@ -307,8 +322,6 @@ namespace MobileRobots
         {
 
         }
-
-
 
         // Useless
         private void StatusLabel_Click(object sender, EventArgs e)
