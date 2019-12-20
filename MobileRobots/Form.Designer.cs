@@ -93,12 +93,12 @@
             // 
             this.LogBOX.AcceptsTab = true;
             this.LogBOX.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.LogBOX.Location = new System.Drawing.Point(194, 63);
+            this.LogBOX.Location = new System.Drawing.Point(194, 177);
             this.LogBOX.Multiline = true;
             this.LogBOX.Name = "LogBOX";
             this.LogBOX.ReadOnly = true;
             this.LogBOX.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.LogBOX.Size = new System.Drawing.Size(594, 354);
+            this.LogBOX.Size = new System.Drawing.Size(594, 240);
             this.LogBOX.TabIndex = 3;
             this.LogBOX.WordWrap = false;
             this.LogBOX.TextChanged += new System.EventHandler(this.LogBOX_TextChanged);
@@ -270,48 +270,53 @@
             // 
             // Sensor3
             // 
-            this.Sensor3.Location = new System.Drawing.Point(148, 225);
+            this.Sensor3.Location = new System.Drawing.Point(148, 218);
             this.Sensor3.Maximum = 2000;
             this.Sensor3.Name = "Sensor3";
-            this.Sensor3.Size = new System.Drawing.Size(640, 23);
+            this.Sensor3.Size = new System.Drawing.Size(621, 30);
             this.Sensor3.Step = 1;
             this.Sensor3.TabIndex = 18;
+            this.Sensor3.Value = 5;
             // 
             // Sensor2
             // 
-            this.Sensor2.Location = new System.Drawing.Point(148, 165);
+            this.Sensor2.Location = new System.Drawing.Point(148, 158);
             this.Sensor2.Maximum = 2000;
             this.Sensor2.Name = "Sensor2";
-            this.Sensor2.Size = new System.Drawing.Size(640, 23);
+            this.Sensor2.Size = new System.Drawing.Size(621, 30);
             this.Sensor2.Step = 1;
             this.Sensor2.TabIndex = 19;
+            this.Sensor2.Value = 5;
             // 
             // Sensor1
             // 
-            this.Sensor1.Location = new System.Drawing.Point(148, 105);
+            this.Sensor1.Location = new System.Drawing.Point(148, 98);
             this.Sensor1.Maximum = 2000;
             this.Sensor1.Name = "Sensor1";
-            this.Sensor1.Size = new System.Drawing.Size(640, 23);
+            this.Sensor1.Size = new System.Drawing.Size(621, 30);
             this.Sensor1.Step = 1;
             this.Sensor1.TabIndex = 20;
+            this.Sensor1.Value = 5;
             // 
             // Sensor4
             // 
-            this.Sensor4.Location = new System.Drawing.Point(148, 285);
+            this.Sensor4.Location = new System.Drawing.Point(148, 278);
             this.Sensor4.Maximum = 2000;
             this.Sensor4.Name = "Sensor4";
-            this.Sensor4.Size = new System.Drawing.Size(640, 23);
+            this.Sensor4.Size = new System.Drawing.Size(621, 30);
             this.Sensor4.Step = 1;
             this.Sensor4.TabIndex = 21;
+            this.Sensor4.Value = 5;
             // 
             // Sensor5
             // 
-            this.Sensor5.Location = new System.Drawing.Point(148, 345);
+            this.Sensor5.Location = new System.Drawing.Point(148, 338);
             this.Sensor5.Maximum = 2000;
             this.Sensor5.Name = "Sensor5";
-            this.Sensor5.Size = new System.Drawing.Size(640, 23);
+            this.Sensor5.Size = new System.Drawing.Size(621, 30);
             this.Sensor5.Step = 1;
             this.Sensor5.TabIndex = 22;
+            this.Sensor5.Value = 5;
             // 
             // Form
             // 
@@ -320,11 +325,6 @@
             this.BackColor = System.Drawing.SystemColors.Control;
             this.CancelButton = this.BTNSTOP;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.Sensor5);
-            this.Controls.Add(this.Sensor4);
-            this.Controls.Add(this.Sensor1);
-            this.Controls.Add(this.Sensor2);
-            this.Controls.Add(this.Sensor3);
             this.Controls.Add(this.BTNSTOP);
             this.Controls.Add(this.BTNSettings);
             this.Controls.Add(this.BTNLog);
@@ -343,6 +343,11 @@
             this.Controls.Add(this.BTNDisconnect);
             this.Controls.Add(this.BTNConnect);
             this.Controls.Add(this.LogBOX);
+            this.Controls.Add(this.Sensor5);
+            this.Controls.Add(this.Sensor4);
+            this.Controls.Add(this.Sensor1);
+            this.Controls.Add(this.Sensor2);
+            this.Controls.Add(this.Sensor3);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form";
