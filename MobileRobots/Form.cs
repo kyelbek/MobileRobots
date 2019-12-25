@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Timers;
 using System.ComponentModel;
+using WinForms = System.Windows.Forms;
 
 // TODO: Lepsze sprawdzanie połączenia (W nowym Timerze?)
 // TODO: Spróbować poprawnie rozłączyć połączenie (Żeby w Herculesie pokazywał, że klient został rozłączony)
@@ -15,6 +16,7 @@ namespace MobileRobots
         public Form()
         {
             InitializeComponent();
+            KeyPreview = true;
         }
 
         // Inicjalizacja łączności i Timera
@@ -184,6 +186,8 @@ namespace MobileRobots
         }
 
         // TODO: ---> Konwersja do Signed HEX
+        // Jest możliwość bezpośredniego zapisania wartości ujemnej w formie ciągu bitów przy pomocy Two's complement (negacja ciągu bajtów i dodanie 1)
+        // C# nie ma w sobie jako takiej natywnej metody wskazywania negatywnych HEXów
         public static string IntToSigHEX(int integer)
         {
             byte[] inbyte = new byte[] { (byte)((sbyte)integer) };
@@ -316,6 +320,11 @@ namespace MobileRobots
                 BTNLogClear.Visible = true;
                 BTNLog.Text = "Sensors";
             }
+        }
+
+        void Form_KeyPress(object sender, WinForms::KeyPressEventArgs e)
+        {
+
         }
 
         private void BTNSettings_Click(object sender, EventArgs e)
