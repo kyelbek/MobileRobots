@@ -19,26 +19,26 @@ namespace MobileRobots
             KeyPreview = true;
         }
 
-        // Inicjalizacja łączności i Timera
-        private static TcpClient client;
-        private static NetworkStream stream;
-        private static Timer Timer1;
-
+        #region Deklaracje
         // Zmienne globalne i wartości podstawowe
+
         public class Globals
         {
             public const Int32 port = 8000;
             public const double time = 500;
             public static String IPAddr;
             public static String CMD;
-            public static String LED;
+            public static int LED;
             public static int ENG_L;
             public static int ENG_R;
-            public static String msg_buffer_s;
-            public static String msg_buffer_r;
+            public static byte[] msg_buffer_s;
+            public static byte[] msg_buffer_r;
         }
 
-        // Deklaracja Timera działającego w trakcie aktywnego połączenia
+        private static TcpClient client;
+        private static NetworkStream stream;
+        private static Timer Timer1;
+
         private void SetTimer(double time)
         {
             Timer1 = new Timer(time);
@@ -46,13 +46,9 @@ namespace MobileRobots
             Timer1.AutoReset = true;
             Timer1.Enabled = true;
         }
-        // Instrukcje wykonywane po przepełnieniu Timer1
-        private void Timer1_Event(Object source, ElapsedEventArgs e)
-        {
-            Build_ControlFrame(Globals.LED,Globals.ENG_L, Globals.ENG_R);
-        }
+        #endregion
 
-        // Funkcje
+        #region Funkcje
         public void Connect(String IP, Int32 port)
         {
             if (Globals.IPAddr != null)
@@ -104,22 +100,39 @@ namespace MobileRobots
                 LogBOX.AppendText(Environment.NewLine);
             }
         }
+        // Funkcja wykonywana po przepełnieniu timera
+        private void Timer1_Event(Object source, ElapsedEventArgs e)
+        {
+            Build_ControlFrame(Globals.ENG_L, Globals.ENG_R);
+        }
+
+        // Budowanie aktualnej ramki do przesłania
+        private void Build_ControlFrame(int ENG_L, int ENG_R)
+        {
+            int LED;
+            if (LED_G.Checked & LED_R.Checked) { LED = 3; }
+            else if (LED_G.Checked) { LED = 1; }
+            else if (LED_R.Checked) { LED = 2; }
+            else { LED = 0; }
+            Globals.msg_buffer_s = new byte[] { Convert.ToByte('['), (byte)LED, (byte)((sbyte)ENG_L), (byte)((sbyte)ENG_R), Convert.ToByte(']') };
+            Globals.msg_buffer_r = SendReceive(Globals.msg_buffer_s);
+        }
 
         // Wysylanie i odbieranie ramek
-        private string SendReceive(string msg)
+        private byte[] SendReceive(byte[] msg)
         {
             try
             {
-                byte[] msg_s = Encoding.ASCII.GetBytes(msg);
+                byte[] msg_s = msg;
                 stream.Write(msg_s, 0, msg_s.Length);
-                Invoke("Sent: " + msg);
-                Byte[] msg_r = new Byte[256];
+                Invoke("Sent: " + Encoding.ASCII.GetString(msg));
+                Byte[] msg_r = new byte[32]; //= new Byte[256];
                 String response = String.Empty;
                 Int32 bytes = stream.Read(msg_r, 0, msg_r.Length);
                 response = Encoding.ASCII.GetString(msg_r, 0, msg_r.Length);
                 Invoke("  Received: " + response);
                 Invoke(Environment.NewLine);
-                return response;
+                return msg_r;
             }
             catch (System.IO.IOException)
             {
@@ -131,7 +144,30 @@ namespace MobileRobots
                 return null;
             }
         }
+        #endregion
 
+        #region Metody pomocnicze
+        // Dzięki tej metodzie jesteśmy w stanie edytować kontrolkę LogBOX z poziomu innego threadu niż ten, w którym została utworzona (Timer1) bez potencjalnych kolizji i nieprzewidzianych skutków
+        // https://stackoverflow.com/questions/13345091/is-it-safe-just-to-set-checkforillegalcrossthreadcalls-to-false-to-avoid-cross-t
+        // W przypadku tego programu nieprzewidziane skutki objawiały się jako przemieszane ze sobą dane "Sent: XX  Received: XX", np. "S   Received:XXent:XX"
+
+        // TODO: ---> Invoker
+        void Invoke(string str)
+        {
+            if (LogBOX.InvokeRequired)
+                LogBOX.Invoke(new Action<string>(Invoke), str);
+            else
+                LogBOX.AppendText(str);
+        }
+
+        // TODO: ---> Konwersja do Signed HEX
+        // Jest możliwość bezpośredniego zapisania wartości ujemnej w formie ciągu bitów przy pomocy Two's complement (negacja ciągu bajtów i dodanie 1)
+        // C# nie ma w sobie jako takiej natywnej metody wskazywania negatywnych HEXów
+        public static string IntToSigHEX(int integer)
+        {
+            byte[] inbyte = new byte[] { (byte)((sbyte)integer) };
+            return BitConverter.ToString(inbyte).Replace("-", "");
+        }
         private bool IsConnected()
         {
             try
@@ -161,40 +197,9 @@ namespace MobileRobots
                 return false;
             }
         }
-        
-        private void Build_ControlFrame(string LED, int ENG_L, int ENG_R)
-        {
-            if (LED_G.Checked & LED_R.Checked) { LED = "03"; }
-            else if (LED_G.Checked) { LED = "01"; }
-            else if (LED_R.Checked) { LED = "02"; }
-            else { LED = "00"; }
-            Globals.msg_buffer_s = "[" + LED + IntToSigHEX(ENG_L) + IntToSigHEX(ENG_R) + "]";
-            Globals.msg_buffer_r = SendReceive(Globals.msg_buffer_s);
-        }
+        #endregion
 
-        // Dzięki tej metodzie jesteśmy w stanie edytować kontrolkę LogBOX z poziomu innego threadu niż ten, w którym została utworzona (Timer1) bez potencjalnych kolizji i nieprzewidzianych skutków
-        // https://stackoverflow.com/questions/13345091/is-it-safe-just-to-set-checkforillegalcrossthreadcalls-to-false-to-avoid-cross-t
-        // W przypadku tego programu nieprzewidziane skutki objawiały się jako przemieszane ze sobą dane "Sent: XX  Received: XX", np. "S   Received:XXent:XX"
-
-        // TODO: ---> Invoker
-        void Invoke(string str)
-        {
-            if (LogBOX.InvokeRequired)
-                LogBOX.Invoke(new Action<string>(Invoke), str);
-            else
-                LogBOX.AppendText(str);
-        }
-
-        // TODO: ---> Konwersja do Signed HEX
-        // Jest możliwość bezpośredniego zapisania wartości ujemnej w formie ciągu bitów przy pomocy Two's complement (negacja ciągu bajtów i dodanie 1)
-        // C# nie ma w sobie jako takiej natywnej metody wskazywania negatywnych HEXów
-        public static string IntToSigHEX(int integer)
-        {
-            byte[] inbyte = new byte[] { (byte)((sbyte)integer) };
-            return BitConverter.ToString(inbyte).Replace("-", "");
-        }
-
-        // Kontrolki z Form
+        #region Kontrolki
         // TODO: ---> Parametry Form_Load
         private void Form_Load(object sender, EventArgs e)
         {
@@ -269,7 +274,7 @@ namespace MobileRobots
 
         private void BTNSend_Click(object sender, EventArgs e)
         {
-            SendReceive("[" + CMDBox.Text + "]");
+            //SendReceive("[" + CMDBox.Text + "]");
         }
 
         private void CMDBox_TextChanged(object sender, EventArgs e)
@@ -287,8 +292,9 @@ namespace MobileRobots
         {
             Globals.ENG_R = Convert.ToInt32(Eng_R.Value);
         }
+        #endregion
 
-        // Test
+        #region Test
 
         private void BTNIsConnected_Click(object sender, EventArgs e)
         {
@@ -331,8 +337,9 @@ namespace MobileRobots
         {
 
         }
+        #endregion
 
-        // Useless
+        #region Useless
         private void StatusLabel_Click(object sender, EventArgs e)
         {
 
@@ -341,10 +348,7 @@ namespace MobileRobots
         {
 
         }
-        private void LogBOX_TextChanged(object sender, EventArgs e)
-        {
-            CMDBox.Text = Globals.msg_buffer_s;
-        }
+
         private void Led_G_CheckedChanged(object sender, EventArgs e)
         {
 
@@ -357,5 +361,6 @@ namespace MobileRobots
         {
 
         }
+        #endregion
     }
 }
