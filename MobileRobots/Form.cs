@@ -16,19 +16,21 @@ namespace MobileRobots
         {
             InitializeComponent();
         }
+        public delegate void InvokeDelegate();
 
         #region Deklaracje
         public class Globals
         {
             public const Int32 port = 8000;
-            public const double time = 500;
-            public static String IPAddr;
-            public static String CMD;
-            public static String LED;
-            public static int ENG_L;
-            public static int ENG_R;
-            public static String msg_buffer_s;
-            public static String msg_buffer_r;
+            public const double time = 200;
+            public static String IPAddr = "";
+            public static String CMD = "";
+            public static String LED = "";
+            public static int ENG_L = 0;
+            public static int ENG_R = 0;
+            public static String msg_buffer_s = "";
+            public static String msg_buffer_r = "";
+            public static String ResponseString = "";
         }
 
         private static TcpClient client;
@@ -84,12 +86,12 @@ namespace MobileRobots
             if (IsConnected() == true)
             {
                 client.Close();
-                client.Dispose();
                 stream.Close();
+                client.Dispose();
                 stream.Dispose();
                 Timer1.Stop();
                 Timer1.Dispose();
-                IsConnected();
+                //IsConnected();
             } else 
             {
                 LogBOX.AppendText("Not connected.");
@@ -101,6 +103,7 @@ namespace MobileRobots
         private void Timer1_Event(Object source, ElapsedEventArgs e)
         {
             Build_ControlFrame(Globals.ENG_L, Globals.ENG_R);
+
         }
 
         // Budowanie ramki do wysłania
@@ -113,6 +116,7 @@ namespace MobileRobots
             else { LED = "00"; }
             Globals.msg_buffer_s = "[" + LED + IntToSigHEX(ENG_L) + IntToSigHEX(ENG_R) + "]";
             Globals.msg_buffer_r = SendReceive(Globals.msg_buffer_s);
+            Globals.ResponseString = "Sent: " + Globals.msg_buffer_s + "  " + "Received: " + Globals.msg_buffer_r;
         }
 
         // Wysylanie i odbieranie ramek
@@ -122,13 +126,13 @@ namespace MobileRobots
             {
                 byte[] msg_s = Encoding.ASCII.GetBytes(msg);
                 stream.Write(msg_s, 0, msg_s.Length);
-                Invoke("Sent: " + msg);
+                //Invoke("Sent: " + msg);
                 Byte[] msg_r = new Byte[256];
                 String response = String.Empty;
                 Int32 bytes = stream.Read(msg_r, 0, msg_r.Length);
                 response = Encoding.ASCII.GetString(msg_r, 0, msg_r.Length);
-                Invoke("  Received: " + response);
-                Invoke(Environment.NewLine);
+                //Invoke("  Received: " + response);
+                //Invoke(Environment.NewLine);
                 return response;
             }
             catch (System.IO.IOException)
@@ -140,6 +144,20 @@ namespace MobileRobots
                 Timer1.Dispose();
                 return null;
             }
+        }
+
+        private void UpdateUI()
+        {
+            //BatteryLevel.Value = 0;
+            BatteryLevel.Value = Convert.ToInt32(Globals.ResponseString.Substring(3,4));
+            Sensor1.Value = 0;
+            Sensor2.Value = 0;
+            Sensor3.Value = 0;
+            Sensor4.Value = 0;
+            Sensor5.Value = 0;
+            LogBOX.AppendText(Globals.ResponseString);
+            LogBOX.AppendText(Environment.NewLine);
+           
         }
         #endregion
 
@@ -200,7 +218,7 @@ namespace MobileRobots
         // TODO: ---> Parametry Form_Load
         private void Form_Load(object sender, EventArgs e)
         {
-            IPBox.Text = "192.168.2.2";
+            IPBox.Text = "192.168.2.34";
             Eng_L.Enabled = false;
             Eng_R.Enabled = false;
             CMDBox.Enabled = false;
@@ -262,6 +280,7 @@ namespace MobileRobots
         private void BTNDisconnect_Click(object sender, EventArgs e)
         {
             Disconnect();
+            IsConnected();
         }
 
         private void IPBox_TextChanged(object sender, EventArgs e)
@@ -332,7 +351,7 @@ namespace MobileRobots
 
         private void BTNSettings_Click(object sender, EventArgs e)
         {
-
+            UpdateUI();
         }
         #endregion
 
