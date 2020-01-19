@@ -135,6 +135,7 @@
             // 
             this.BatteryLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BatteryLevel.Location = new System.Drawing.Point(628, 10);
+            this.BatteryLevel.Maximum = 32767;
             this.BatteryLevel.Name = "BatteryLevel";
             this.BatteryLevel.Size = new System.Drawing.Size(160, 23);
             this.BatteryLevel.Step = 1;
@@ -271,7 +272,7 @@
             // Sensor3
             // 
             this.Sensor3.Location = new System.Drawing.Point(148, 218);
-            this.Sensor3.Maximum = 2000;
+            this.Sensor3.Maximum = 8000;
             this.Sensor3.Name = "Sensor3";
             this.Sensor3.Size = new System.Drawing.Size(621, 30);
             this.Sensor3.Step = 1;
@@ -281,7 +282,7 @@
             // Sensor2
             // 
             this.Sensor2.Location = new System.Drawing.Point(148, 158);
-            this.Sensor2.Maximum = 2000;
+            this.Sensor2.Maximum = 8000;
             this.Sensor2.Name = "Sensor2";
             this.Sensor2.Size = new System.Drawing.Size(621, 30);
             this.Sensor2.Step = 1;
@@ -291,7 +292,7 @@
             // Sensor1
             // 
             this.Sensor1.Location = new System.Drawing.Point(148, 98);
-            this.Sensor1.Maximum = 2000;
+            this.Sensor1.Maximum = 8000;
             this.Sensor1.Name = "Sensor1";
             this.Sensor1.Size = new System.Drawing.Size(621, 30);
             this.Sensor1.Step = 1;
@@ -301,7 +302,7 @@
             // Sensor4
             // 
             this.Sensor4.Location = new System.Drawing.Point(148, 278);
-            this.Sensor4.Maximum = 2000;
+            this.Sensor4.Maximum = 8000;
             this.Sensor4.Name = "Sensor4";
             this.Sensor4.Size = new System.Drawing.Size(621, 30);
             this.Sensor4.Step = 1;
@@ -311,7 +312,7 @@
             // Sensor5
             // 
             this.Sensor5.Location = new System.Drawing.Point(148, 338);
-            this.Sensor5.Maximum = 2000;
+            this.Sensor5.Maximum = 8000;
             this.Sensor5.Name = "Sensor5";
             this.Sensor5.Size = new System.Drawing.Size(621, 30);
             this.Sensor5.Step = 1;

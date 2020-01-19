@@ -22,7 +22,7 @@ namespace MobileRobots
         public class Globals
         {
             public const Int32 port = 8000;
-            public const double time = 200;
+            public const double time = 5000;
             public static String IPAddr = "";
             public static String CMD = "";
             public static String LED = "";
@@ -31,6 +31,7 @@ namespace MobileRobots
             public static String msg_buffer_s = "";
             public static String msg_buffer_r = "";
             public static String ResponseString = "";
+            public static Int16 Status = 0;
         }
 
         private static TcpClient client;
@@ -148,16 +149,22 @@ namespace MobileRobots
 
         private void UpdateUI()
         {
-            //BatteryLevel.Value = 0;
-            BatteryLevel.Value = Convert.ToInt32(Globals.ResponseString.Substring(3,4));
-            Sensor1.Value = 0;
-            Sensor2.Value = 0;
-            Sensor3.Value = 0;
-            Sensor4.Value = 0;
-            Sensor5.Value = 0;
             LogBOX.AppendText(Globals.ResponseString);
-            LogBOX.AppendText(Environment.NewLine);
-           
+            if (Globals.ResponseString.Length >= 25)
+            {   
+                Globals.Status = Convert.ToInt16(Globals.msg_buffer_r.Substring(1, 2));
+                BatteryLevel.Value = Convert.ToInt16(Globals.msg_buffer_r.Substring(3, 4));
+                Sensor1.Value = Convert.ToInt16(Globals.msg_buffer_r.Substring(5, 4));
+                Sensor2.Value = Convert.ToInt16(Globals.msg_buffer_r.Substring(9, 4));
+                Sensor3.Value = Convert.ToInt16(Globals.msg_buffer_r.Substring(13, 4));
+                Sensor4.Value = Convert.ToInt16(Globals.msg_buffer_r.Substring(17, 4));
+                Sensor5.Value = Convert.ToInt16(Globals.msg_buffer_r.Substring(21, 4));
+            }
+            else
+            {
+                LogBOX.AppendText("Za krotki string");
+            }
+            string rdata = "[9913A9817D117D117D117D117D1]";
         }
         #endregion
 
@@ -218,7 +225,7 @@ namespace MobileRobots
         // TODO: ---> Parametry Form_Load
         private void Form_Load(object sender, EventArgs e)
         {
-            IPBox.Text = "192.168.2.34";
+            IPBox.Text = "127.0.0.1";
             Eng_L.Enabled = false;
             Eng_R.Enabled = false;
             CMDBox.Enabled = false;
