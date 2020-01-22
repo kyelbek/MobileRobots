@@ -9,6 +9,7 @@ namespace MobileRobots
 {
     public partial class Form : System.Windows.Forms.Form
     {
+        #region Init
         public Form()
         {
             InitializeComponent();
@@ -27,6 +28,8 @@ namespace MobileRobots
             BTNLogClear.Visible = false;
             SetTimer(Globals.time);
         }
+        #endregion
+
         #region Deklaracje
 
         TcpClient client;
