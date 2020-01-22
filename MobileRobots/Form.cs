@@ -343,7 +343,51 @@ namespace MobileRobots
             UpdateUI();
         }
 
+        private void Move_Forward()
+        {
+            if(Eng_L.Value > -128 & Eng_L.Value < 127)
+            {
+                Eng_L.Value += 20;
+            }
+            if (Eng_R.Value > -128 & Eng_R.Value < 127)
+            {
+                Eng_R.Value += 20;
+            }
+        }
 
+        private void Move_Backward()
+        {
+            if (Eng_L.Value > -128 & Eng_L.Value < 127)
+            {
+                Eng_L.Value -= 20;
+            }
+            if (Eng_R.Value > -128 & Eng_R.Value < 127)
+            {
+                Eng_R.Value -= 20;
+            }
+        }
+        private void Move_Left()
+        {
+            if (Eng_L.Value > -128 & Eng_L.Value < 127)
+            {
+                Eng_L.Value -= 20;
+            }
+            if (Eng_R.Value > -128 & Eng_R.Value < 127)
+            {
+                Eng_R.Value += 20;
+            }
+        }
+        private void Move_Right()
+        {
+            if (Eng_L.Value > -128 & Eng_L.Value < 127)
+            {
+                Eng_L.Value += 20;
+            }
+            if (Eng_R.Value > -128 & Eng_R.Value < 127)
+            {
+                Eng_R.Value -= 20;
+            }
+        }
         #endregion
         #region Useless
         private void LogBOX_TextChanged(object sender, EventArgs e)
