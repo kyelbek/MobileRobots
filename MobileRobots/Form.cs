@@ -264,8 +264,8 @@ namespace MobileRobots
         // TODO ---> STOP
         private void BTNSTOP_Click(object sender, EventArgs e)
         {
-            Globals.ENG_L = 0;
-            Globals.ENG_R = 0;
+            //Globals.ENG_L = 0;
+            //Globals.ENG_R = 0;
             Eng_L.Value = 0;
             Eng_R.Value = 0;
             LED_G.Checked = false;
@@ -330,12 +330,7 @@ namespace MobileRobots
         }
         #endregion
 
-        #region Test
-        private void BTNIsConnected_Click(object sender, EventArgs e)
-        {
-            UpdateUI();
-        }
-        #region Przypisanie klawiszy
+        #region Ruch klawiszami (Bonus)
         private void Form_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
         {
             if (e.Control && e.KeyCode.ToString() == "W") { Move_Forward(); }
@@ -345,27 +340,31 @@ namespace MobileRobots
 
             if (e.Control && e.KeyCode.ToString() == "Q") { Move_LeftQ(); }
             if (e.Control && e.KeyCode.ToString() == "E") { Move_RightE(); }
+            if (e.Control && e.KeyCode.ToString() == "C") { Move_LeftB(); }
+            if (e.Control && e.KeyCode.ToString() == "Z") { Move_RightB(); }
+
+            if (e.Control && e.KeyCode == System.Windows.Forms.Keys.Space) { Move_Stop(); }
         }
 
         private void Move_Forward()
         {
-            if (/*Eng_L.Value - Globals.hop > -128 && */Eng_L.Value + Globals.hop <= 127) { Eng_L.Value += Globals.hop; } else { Eng_L.Value += Eng_L.Maximum - Eng_L.Value; }
-            if (/*Eng_R.Value - Globals.hop > -128 && */Eng_R.Value + Globals.hop <= 127) { Eng_R.Value += Globals.hop; } else { Eng_R.Value += Eng_R.Maximum - Eng_R.Value; }
+            if (Eng_L.Value + Globals.hop <= 127) { Eng_L.Value += Globals.hop; } else { Eng_L.Value += Eng_L.Maximum - Eng_L.Value; }
+            if (Eng_R.Value + Globals.hop <= 127) { Eng_R.Value += Globals.hop; } else { Eng_R.Value += Eng_R.Maximum - Eng_R.Value; }
         }
         private void Move_Backward()
         {
-            if (Eng_L.Value - Globals.hop >= -128/* && Eng_L.Value + Globals.hop < 127*/) { Eng_L.Value -= Globals.hop; } else { Eng_L.Value -= Eng_L.Minimum - Eng_L.Value; }
-            if (Eng_R.Value - Globals.hop >= -128/* && Eng_R.Value + Globals.hop < 127*/) { Eng_R.Value -= Globals.hop; } else { Eng_R.Value -= Eng_R.Minimum - Eng_R.Value; }
+            if (Eng_L.Value - Globals.hop >= -128) { Eng_L.Value -= Globals.hop; } else { Eng_L.Value -= Math.Abs(Eng_L.Minimum) - Math.Abs(Eng_L.Value); }
+            if (Eng_R.Value - Globals.hop >= -128) { Eng_R.Value -= Globals.hop; } else { Eng_R.Value -= Math.Abs(Eng_R.Minimum) - Math.Abs(Eng_R.Value); }
         }
         private void Move_Left()
         {
-            if (Eng_L.Value - Globals.hop >= -128/* && Eng_L.Value + Globals.hop < 127*/) { Eng_L.Value -= Globals.hop; } else { Eng_L.Value -= Eng_L.Minimum - Eng_L.Value; }
-            if (/*Eng_R.Value - Globals.hop > -128 && */Eng_R.Value + Globals.hop <= 127) { Eng_R.Value += Globals.hop; } else { Eng_R.Value += Eng_R.Maximum - Eng_R.Value; }
+            if (Eng_L.Value - Globals.hop >= -128) { Eng_L.Value -= Globals.hop; } else { Eng_L.Value -= Math.Abs(Eng_L.Minimum) - Math.Abs(Eng_L.Value); }
+            if (Eng_R.Value + Globals.hop <= 127) { Eng_R.Value += Globals.hop; } else { Eng_R.Value += Eng_R.Maximum - Eng_R.Value; }
         }
         private void Move_Right()
         {
-            if (/*Eng_L.Value - Globals.hop > -128 && */Eng_L.Value + Globals.hop <= 127) { Eng_L.Value += Globals.hop; } else { Eng_L.Value += Eng_L.Maximum - Eng_L.Value; }
-            if (Eng_R.Value - Globals.hop >= -128/* && Eng_R.Value + Globals.hop < 127*/) { Eng_R.Value -= Globals.hop; } else { Eng_R.Value -= Eng_R.Minimum - Eng_R.Value; }
+            if (Eng_L.Value + Globals.hop <= 127) { Eng_L.Value += Globals.hop; } else { Eng_L.Value += Eng_L.Maximum - Eng_L.Value; }
+            if (Eng_R.Value - Globals.hop >= -128) { Eng_R.Value -= Globals.hop; } else { Eng_R.Value -= Math.Abs(Eng_R.Minimum) - Math.Abs(Eng_R.Value); }
         }
         private void Move_LeftQ()
         {
@@ -375,7 +374,27 @@ namespace MobileRobots
         {
             if (Eng_L.Value + Globals.hop <= 127) { Eng_L.Value += Globals.hop; } else { Eng_L.Value += Eng_L.Maximum - Eng_L.Value; }
         }
+        private void Move_LeftB()
+        {
+            if (Eng_R.Value + Globals.hop <= 127) { Eng_R.Value -= Globals.hop; } else { Eng_R.Value -= Eng_R.Maximum - Eng_R.Value; }
+        }
+        private void Move_RightB()
+        {
+            if (Eng_L.Value + Globals.hop <= 127) { Eng_L.Value -= Globals.hop; } else { Eng_L.Value -= Eng_L.Maximum - Eng_L.Value; }
+        }
+        private void Move_Stop()
+        {
+            Eng_L.Value = 0;
+            Eng_R.Value = 0;
+        }
         #endregion
+
+        #region Test
+        private void BTNIsConnected_Click(object sender, EventArgs e)
+        {
+            UpdateUI();
+        }
+        
         #endregion
         #region Useless
 
