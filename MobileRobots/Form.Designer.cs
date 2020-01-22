@@ -45,7 +45,6 @@
             this.Eng_L = new System.Windows.Forms.TrackBar();
             this.Battery_Label = new System.Windows.Forms.Label();
             this.BTNLog = new System.Windows.Forms.Button();
-            this.BTNSettings = new System.Windows.Forms.Button();
             this.BTNSTOP = new System.Windows.Forms.Button();
             this.Sensor3 = new System.Windows.Forms.ProgressBar();
             this.Sensor2 = new System.Windows.Forms.ProgressBar();
@@ -249,20 +248,10 @@
             this.BTNLog.UseVisualStyleBackColor = true;
             this.BTNLog.Click += new System.EventHandler(this.BTNLog_Click);
             // 
-            // BTNSettings
-            // 
-            this.BTNSettings.Location = new System.Drawing.Point(625, 423);
-            this.BTNSettings.Name = "BTNSettings";
-            this.BTNSettings.Size = new System.Drawing.Size(75, 23);
-            this.BTNSettings.TabIndex = 16;
-            this.BTNSettings.Text = "Settings";
-            this.BTNSettings.UseVisualStyleBackColor = true;
-            this.BTNSettings.Click += new System.EventHandler(this.BTNSettings_Click);
-            // 
             // BTNSTOP
             // 
             this.BTNSTOP.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.BTNSTOP.Location = new System.Drawing.Point(544, 423);
+            this.BTNSTOP.Location = new System.Drawing.Point(628, 423);
             this.BTNSTOP.Name = "BTNSTOP";
             this.BTNSTOP.Size = new System.Drawing.Size(75, 23);
             this.BTNSTOP.TabIndex = 17;
@@ -339,7 +328,6 @@
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.RStatus);
             this.Controls.Add(this.BTNSTOP);
-            this.Controls.Add(this.BTNSettings);
             this.Controls.Add(this.BTNLog);
             this.Controls.Add(this.Battery_Label);
             this.Controls.Add(this.Eng_L);
@@ -391,7 +379,6 @@
         private System.Windows.Forms.TrackBar Eng_L;
         private System.Windows.Forms.Label Battery_Label;
         private System.Windows.Forms.Button BTNLog;
-        private System.Windows.Forms.Button BTNSettings;
         private System.Windows.Forms.Button BTNSTOP;
         private System.Windows.Forms.ProgressBar Sensor3;
         private System.Windows.Forms.ProgressBar Sensor2;

@@ -5,9 +5,6 @@ using System.Text;
 using System.Timers;
 using System.ComponentModel;
 
-// TODO: Lepsze sprawdzanie połączenia (W nowym Timerze?)
-// TODO: Spróbować poprawnie rozłączyć połączenie (Żeby w Herculesie pokazywał, że klient został rozłączony)
-
 namespace MobileRobots
 {
     public partial class Form : System.Windows.Forms.Form
@@ -16,18 +13,15 @@ namespace MobileRobots
         {
             InitializeComponent();
         }
-        //public delegate void InvokeDelegate();
 
         // TODO: ---> Parametry Form_Load
         private void Form_Load(object sender, EventArgs e)
         {
             IPBox.Text = "127.0.0.1";
-            Eng_L.Enabled = false;
-            Eng_R.Enabled = false;
             CMDBox.Enabled = false;
-            CMDBox.Visible = true;
+            CMDBox.Visible = false;
             BTNSend.Enabled = false;
-            BTNSend.Visible = true;
+            BTNSend.Visible = false;
             LogBOX.Visible = false;
             LogBOX.Enabled = false;
             BTNLogClear.Visible = false;
@@ -41,8 +35,9 @@ namespace MobileRobots
 
         public class Globals                         // TODO: ---> Klasa zmiennych globalnych
         {
+            public const Int16 time = 300;
             public const Int16 port = 8000;
-            public const Int16 time = 200;           // TODO: ---> Interwał czasowy zegara
+            
             public static String IPAddr = String.Empty;
             public static String CMD = String.Empty;
             public static String LED = String.Empty;
@@ -58,7 +53,7 @@ namespace MobileRobots
         {
             Timer1 = new Timer(time);
             Timer1.Elapsed += Timer1_Event;
-            Timer1.AutoReset = true;
+            Timer1.AutoReset = false;
             Timer1.Enabled = false;
         }
         #endregion
@@ -73,22 +68,13 @@ namespace MobileRobots
                     client = new TcpClient { SendTimeout = 1000 };
                     client.Connect(IP, port);
                     stream = client.GetStream();
-                    if (client.Connected == true & Timer1.Enabled == false)
-                    {
-                        Timer1.Start();     // TODO: ---> Włączanie zegara
-                    }
-                    else
-                    {
-                        Timer1.Stop();
-                        Timer1.Dispose();
-                    }
                 }
                 catch (SocketException ex)
                 {
                     LogBOX.AppendText(ex.Message);
                     LogBOX.AppendText(Environment.NewLine);
                 }
-            }
+            } 
             else
             {
                 LogBOX.AppendText("Enter IP Address first.");
@@ -104,10 +90,7 @@ namespace MobileRobots
                 stream.Close();
                 client.Dispose();
                 stream.Dispose();
-                if (Timer1.Enabled == true)
-                { 
-                    Timer1.Stop(); 
-                }
+                Timer1.Stop(); 
             } else 
             {
                 LogBOX.AppendText("Not connected.");
@@ -118,10 +101,20 @@ namespace MobileRobots
         // Instrukcje wykonywane po przepełnieniu Timer1
         private void Timer1_Event(Object source, ElapsedEventArgs e)
         {
-            Build_ControlFrame(Globals.ENG_L, Globals.ENG_R);
-            IsConnected();
-            Globals.msg_buffer_r = SendReceive(Globals.msg_buffer_s);
-            Globals.ResponseString = "Sent: " + Globals.msg_buffer_s + "  " + "Received: " + Globals.msg_buffer_r;
+
+            try
+            {
+                Timer1.Stop();
+                Build_ControlFrame(Globals.ENG_L, Globals.ENG_R);
+                IsConnected();
+                Globals.msg_buffer_r = SendReceive(Globals.msg_buffer_s);
+                Globals.ResponseString = "Sent: " + Globals.msg_buffer_s + "  " + "Received: " + Globals.msg_buffer_r;
+            }
+            finally
+            {
+                UpdateUI();
+                Timer1.Start();
+            }
         }
 
         // Budowanie ramki do wysłania
@@ -132,7 +125,7 @@ namespace MobileRobots
             else if (LED_G.Checked) { LED = "01"; }
             else if (LED_R.Checked) { LED = "02"; }
             else { LED = "00"; }
-            Globals.msg_buffer_s = "[" + LED + IntToSigHEX(ENG_L) + IntToSigHEX(ENG_R) + "]";
+            Globals.msg_buffer_s = "[" + LED + U2(ENG_L) + U2(ENG_R) + "]";
         }
 
         // Wysylanie i odbieranie ramek
@@ -150,8 +143,7 @@ namespace MobileRobots
             }
             catch (System.IO.IOException)
             {;
-                Invoke("Connection interrupted.");
-                Invoke(Environment.NewLine);
+                SafeInvoke(LogBOX, () => { LogBOX.AppendText("Connection interrupted."); LogBOX.AppendText(Environment.NewLine); }) ;
                 client.Close();
                 stream.Close();
                 client.Dispose();
@@ -173,66 +165,70 @@ namespace MobileRobots
                     StatusLabel.Text = "Connected";
                     Eng_L.Enabled = true;
                     Eng_R.Enabled = true;
+                    Timer1.Start();
                     return true;
                 }
-                else if (client.Connected == false)
+                else
                 {
                     StatusLabel.ForeColor = Color.Red;
                     StatusLabel.Text = "Disconnected";
                     Eng_L.Enabled = false;
                     Eng_R.Enabled = false;
+                    Timer1.Stop();
                     return false;
-                } else { return false; }
+                }
             }
-            catch (NullReferenceException)
+            catch (NullReferenceException) 
             {
+                StatusLabel.ForeColor = Color.Red;
+                StatusLabel.Text = "Disconnected";
+                Eng_L.Enabled = false;
+                Eng_R.Enabled = false;
+                Timer1.Stop();
                 return false;
             }
         }
 
         private void UpdateUI()
         {
-            LogBOX.AppendText(Globals.ResponseString);
-            LogBOX.AppendText(Environment.NewLine);
-            if (Globals.msg_buffer_r.Length == 28)
+            SafeInvoke(LogBOX, () => { LogBOX.AppendText(Globals.ResponseString); LogBOX.AppendText(Environment.NewLine); });
+            if (Globals.msg_buffer_r.Length == 28 && Globals.msg_buffer_r.Substring(0, 3) == "[00" & Globals.msg_buffer_r.Substring(27, 1) == "]")
             {
                 try
                 {
-                    RStatus.Text = Globals.msg_buffer_r.Substring(1, 2);
-                    BatteryLevel.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(3, 4), 16);
-                    Sensor1.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(7, 4), 16);
-                    Sensor2.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(11, 4), 16);
-                    Sensor3.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(15, 4), 16);
-                    Sensor4.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(19, 4), 16);
-                    Sensor5.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(23, 4), 16);
+                    SafeInvoke(RStatus, () => { RStatus.Text = "Status: " + Globals.msg_buffer_r.Substring(1, 2); });
+                    SafeInvoke(BatteryLevel, () => { BatteryLevel.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(3, 4), 16); });
+                    SafeInvoke(Sensor1, () => { Sensor1.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(7, 4), 16); });
+                    SafeInvoke(Sensor2, () => { Sensor2.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(11, 4), 16); });
+                    SafeInvoke(Sensor3, () => { Sensor3.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(15, 4), 16); });
+                    SafeInvoke(Sensor4, () => { Sensor4.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(19, 4), 16); });
+                    SafeInvoke(Sensor5, () => { Sensor5.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(23, 4), 16); });
                 }
                 catch (FormatException)
                 {
-                    LogBOX.AppendText("Invalid response, can't update UI controls.");
-                    LogBOX.AppendText(Environment.NewLine);
+                    SafeInvoke(LogBOX, () => { LogBOX.AppendText("Invalid response, can't update UI controls."); LogBOX.AppendText(Environment.NewLine); });
                 }
             }
             else
             {
-                LogBOX.AppendText("Invalid response, can't update UI controls.");
-                LogBOX.AppendText(Environment.NewLine);
+                SafeInvoke(LogBOX, () => { LogBOX.AppendText("Invalid response, can't update UI controls."); LogBOX.AppendText(Environment.NewLine); });
             }
         }
 
-        // TODO: ---> Invoker
-        // Dzięki tej metodzie jesteśmy w stanie edytować kontrolkę LogBOX z poziomu innego threadu niż ten, w którym została utworzona (Timer1) bez potencjalnych kolizji i nieprzewidzianych skutków
+        // TODO: ---> SafeInvoke
+        // Dzięki tej metodzie jesteśmy w stanie edytować kontrolkę LogBOX z poziomu innego threadu (Timer1) niż ten, w którym została utworzona (Form) bez potencjalnych kolizji i nieprzewidzianych skutków
         // https://stackoverflow.com/questions/13345091/is-it-safe-just-to-set-checkforillegalcrossthreadcalls-to-false-to-avoid-cross-t
         // W przypadku tego programu nieprzewidziane skutki objawiały się jako przemieszane ze sobą dane "Sent: XX  Received: XX", np. "S   Received:XXent:XX"
 
-        void Invoke(string str)
+        public static void SafeInvoke(System.Windows.Forms.Control control, System.Action action)
         {
-            if (LogBOX.InvokeRequired)
-                LogBOX.Invoke(new Action<string>(Invoke), str);
+            if (control.InvokeRequired)
+                control.Invoke(new System.Windows.Forms.MethodInvoker(() => { action(); }));
             else
-                LogBOX.AppendText(str);
+                action();
         }
 
-        public static string IntToSigHEX(int integer)               // TODO: ---> Konwersja signed int do hex przy użyciu metody U2 (Uzupełnień do 2)
+        public static string U2(int integer)               // TODO: ---> Konwersja signed int do hex przy użyciu metody U2 (Uzupełnień do 2)
         {
             byte[] inbyte = new byte[] { (byte)((sbyte)integer) };
             return BitConverter.ToString(inbyte).Replace("-", "");
@@ -249,7 +245,7 @@ namespace MobileRobots
                 Timer1.Dispose();
         }
 
-        // TODO ---> STOP AWARYJNY
+        // TODO ---> STOP
         private void BTNSTOP_Click(object sender, EventArgs e)
         {
             Globals.ENG_L = 0;
@@ -285,7 +281,6 @@ namespace MobileRobots
                     LogBOX.AppendText("Error. Make sure you entered proper IP address and host is reachable.");
                     LogBOX.AppendText(Environment.NewLine);
                 }
-
             }
         }
 
@@ -293,6 +288,24 @@ namespace MobileRobots
         {
             Disconnect();
             IsConnected();
+        }
+
+        private void BTNLog_Click(object sender, EventArgs e)
+        {
+            if (LogBOX.Visible == true)
+            {
+                LogBOX.Visible = false;
+                LogBOX.Enabled = false;
+                BTNLogClear.Visible = false;
+                BTNLog.Text = "Log";
+            }
+            else
+            {
+                LogBOX.Visible = true;
+                LogBOX.Enabled = true;
+                BTNLogClear.Visible = true;
+                BTNLog.Text = "Sensors";
+            }
         }
 
         private void IPBox_TextChanged(object sender, EventArgs e)
@@ -324,48 +337,16 @@ namespace MobileRobots
         #region Test
         private void BTNIsConnected_Click(object sender, EventArgs e)
         {
-            if (client == null)
-            {
-                LogBOX.AppendText("Connected:" + "False");               
-            }
-            else
-            {
-                IsConnected();
-                LogBOX.AppendText("Connected:" + client.Connected);
-            }
-            LogBOX.AppendText(Environment.NewLine);     
-        }
-
-        private void BTNLog_Click(object sender, EventArgs e)
-        {
-            if (LogBOX.Visible == true)
-            {
-                LogBOX.Visible = false;
-                LogBOX.Enabled = false;
-                BTNLogClear.Visible = false;
-                BTNLog.Text = "Log";
-            }
-            else
-            {
-                LogBOX.Visible = true;
-                LogBOX.Enabled = true;
-                BTNLogClear.Visible = true;
-                BTNLog.Text = "Sensors";
-            }
-        }
-
-        private void LogBOX_TextChanged(object sender, EventArgs e)
-        {
-            CMDBox.Text = Globals.msg_buffer_s;
-        }
-
-        private void BTNSettings_Click(object sender, EventArgs e)
-        {
             UpdateUI();
         }
-        #endregion
 
+
+        #endregion
         #region Useless
+        private void LogBOX_TextChanged(object sender, EventArgs e)
+        {
+
+        }
         private void StatusLabel_Click(object sender, EventArgs e)
         {
 
