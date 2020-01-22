@@ -351,9 +351,11 @@
             this.Controls.Add(this.Sensor3);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.Name = "Form";
             this.Text = "Robot Control";
             this.Load += new System.EventHandler(this.Form_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.Eng_R)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Eng_L)).EndInit();
             this.ResumeLayout(false);

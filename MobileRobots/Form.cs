@@ -20,6 +20,8 @@ namespace MobileRobots
         {
             IPBox.Text = "127.0.0.1";
             CMDBox.Enabled = false;
+            Eng_L.Enabled = false;
+            Eng_R.Enabled = false;
             CMDBox.Visible = false;
             BTNSend.Enabled = false;
             BTNSend.Visible = false;
@@ -40,6 +42,8 @@ namespace MobileRobots
         {
             public const Int16 time = 300;
             public const Int16 port = 8000;
+
+            public const Int16 hop = 5;             // TODO: ---> Skok podczas sterowania klawiszami
             
             public static String IPAddr = String.Empty;
             public static String CMD = String.Empty;
@@ -71,7 +75,7 @@ namespace MobileRobots
                     client = new TcpClient { SendTimeout = 1000 };
                     client.Connect(IP, port);
                     stream = client.GetStream();
-                }
+                    }
                 catch (SocketException ex)
                 {
                     LogBOX.AppendText(ex.Message);
@@ -89,11 +93,11 @@ namespace MobileRobots
         {
             if (IsConnected() == true)
             {
+                Timer1.Stop();
                 client.Close();
                 stream.Close();
                 client.Dispose();
                 stream.Dispose();
-                Timer1.Stop(); 
             } else 
             {
                 LogBOX.AppendText("Not connected.");
@@ -104,12 +108,12 @@ namespace MobileRobots
         // Instrukcje wykonywane po przepełnieniu Timer1
         private void Timer1_Event(Object source, ElapsedEventArgs e)
         {
-
             try
             {
                 Timer1.Stop();
+                SafeInvoke(Eng_L, () => { Globals.ENG_L = Eng_L.Value; });
+                SafeInvoke(Eng_R, () => { Globals.ENG_R = Eng_R.Value; });
                 Build_ControlFrame(Globals.ENG_L, Globals.ENG_R);
-                IsConnected();
                 Globals.msg_buffer_r = SendReceive(Globals.msg_buffer_s);
                 Globals.ResponseString = "Sent: " + Globals.msg_buffer_s + "  " + "Received: " + Globals.msg_buffer_r;
             }
@@ -117,6 +121,7 @@ namespace MobileRobots
             {
                 UpdateUI();
                 Timer1.Start();
+                IsConnected();
             }
         }
 
@@ -154,6 +159,16 @@ namespace MobileRobots
                 Timer1.Stop();
                 return String.Empty;
             }
+            catch (ObjectDisposedException)
+            {
+                SafeInvoke(LogBOX, () => { LogBOX.AppendText("Connection interrupted."); LogBOX.AppendText(Environment.NewLine); });
+                client.Close();
+                stream.Close();
+                client.Dispose();
+                stream.Dispose();
+                Timer1.Stop();
+                return String.Empty;
+            }
         }
         #endregion
 
@@ -164,19 +179,17 @@ namespace MobileRobots
             {
                 if (client.Connected == true)
                 {
-                    StatusLabel.ForeColor = Color.Green;
-                    StatusLabel.Text = "Connected";
-                    Eng_L.Enabled = true;
-                    Eng_R.Enabled = true;
+                    SafeInvoke(StatusLabel, () => { StatusLabel.ForeColor = Color.Green; StatusLabel.Text = "Connected"; });
+                    SafeInvoke(Eng_L, () => { Eng_L.Enabled = true; });
+                    SafeInvoke(Eng_R, () => { Eng_R.Enabled = true; });
                     Timer1.Start();
                     return true;
                 }
                 else
                 {
-                    StatusLabel.ForeColor = Color.Red;
-                    StatusLabel.Text = "Disconnected";
-                    Eng_L.Enabled = false;
-                    Eng_R.Enabled = false;
+                    SafeInvoke(StatusLabel, () => { StatusLabel.ForeColor = Color.Red; StatusLabel.Text = "Disconnected"; });
+                    SafeInvoke(Eng_L, () => { Eng_L.Enabled = false; });
+                    SafeInvoke(Eng_R, () => { Eng_R.Enabled = false; });
                     Timer1.Stop();
                     return false;
                 }
@@ -315,26 +328,6 @@ namespace MobileRobots
         {
             Globals.IPAddr = IPBox.Text;
         }
-
-        private void BTNSend_Click(object sender, EventArgs e)
-        {
-            SendReceive("[" + CMDBox.Text + "]");
-        }
-
-        private void CMDBox_TextChanged(object sender, EventArgs e)
-        {
-            Globals.CMD = Convert.ToString(CMDBox.Text);
-        }
-
-        private void Eng_L_Scroll(object sender, EventArgs e)
-        {
-            Globals.ENG_L = Eng_L.Value;
-        }
-
-        private void Eng_R_Scroll(object sender, EventArgs e)
-        {
-            Globals.ENG_R = Eng_R.Value;
-        }
         #endregion
 
         #region Test
@@ -342,54 +335,69 @@ namespace MobileRobots
         {
             UpdateUI();
         }
+        #region Przypisanie klawiszy
+        private void Form_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode.ToString() == "W") { Move_Forward(); }
+            if (e.Control && e.KeyCode.ToString() == "S") { Move_Backward(); }
+            if (e.Control && e.KeyCode.ToString() == "A") { Move_Left(); }
+            if (e.Control && e.KeyCode.ToString() == "D") { Move_Right(); }
+
+            if (e.Control && e.KeyCode.ToString() == "Q") { Move_LeftQ(); }
+            if (e.Control && e.KeyCode.ToString() == "E") { Move_RightE(); }
+        }
 
         private void Move_Forward()
         {
-            if(Eng_L.Value > -128 & Eng_L.Value < 127)
-            {
-                Eng_L.Value += 20;
-            }
-            if (Eng_R.Value > -128 & Eng_R.Value < 127)
-            {
-                Eng_R.Value += 20;
-            }
+            if (/*Eng_L.Value - Globals.hop > -128 && */Eng_L.Value + Globals.hop <= 127) { Eng_L.Value += Globals.hop; } else { Eng_L.Value += Eng_L.Maximum - Eng_L.Value; }
+            if (/*Eng_R.Value - Globals.hop > -128 && */Eng_R.Value + Globals.hop <= 127) { Eng_R.Value += Globals.hop; } else { Eng_R.Value += Eng_R.Maximum - Eng_R.Value; }
         }
-
         private void Move_Backward()
         {
-            if (Eng_L.Value > -128 & Eng_L.Value < 127)
-            {
-                Eng_L.Value -= 20;
-            }
-            if (Eng_R.Value > -128 & Eng_R.Value < 127)
-            {
-                Eng_R.Value -= 20;
-            }
+            if (Eng_L.Value - Globals.hop >= -128/* && Eng_L.Value + Globals.hop < 127*/) { Eng_L.Value -= Globals.hop; } else { Eng_L.Value -= Eng_L.Minimum - Eng_L.Value; }
+            if (Eng_R.Value - Globals.hop >= -128/* && Eng_R.Value + Globals.hop < 127*/) { Eng_R.Value -= Globals.hop; } else { Eng_R.Value -= Eng_R.Minimum - Eng_R.Value; }
         }
         private void Move_Left()
         {
-            if (Eng_L.Value > -128 & Eng_L.Value < 127)
-            {
-                Eng_L.Value -= 20;
-            }
-            if (Eng_R.Value > -128 & Eng_R.Value < 127)
-            {
-                Eng_R.Value += 20;
-            }
+            if (Eng_L.Value - Globals.hop >= -128/* && Eng_L.Value + Globals.hop < 127*/) { Eng_L.Value -= Globals.hop; } else { Eng_L.Value -= Eng_L.Minimum - Eng_L.Value; }
+            if (/*Eng_R.Value - Globals.hop > -128 && */Eng_R.Value + Globals.hop <= 127) { Eng_R.Value += Globals.hop; } else { Eng_R.Value += Eng_R.Maximum - Eng_R.Value; }
         }
         private void Move_Right()
         {
-            if (Eng_L.Value > -128 & Eng_L.Value < 127)
-            {
-                Eng_L.Value += 20;
-            }
-            if (Eng_R.Value > -128 & Eng_R.Value < 127)
-            {
-                Eng_R.Value -= 20;
-            }
+            if (/*Eng_L.Value - Globals.hop > -128 && */Eng_L.Value + Globals.hop <= 127) { Eng_L.Value += Globals.hop; } else { Eng_L.Value += Eng_L.Maximum - Eng_L.Value; }
+            if (Eng_R.Value - Globals.hop >= -128/* && Eng_R.Value + Globals.hop < 127*/) { Eng_R.Value -= Globals.hop; } else { Eng_R.Value -= Eng_R.Minimum - Eng_R.Value; }
+        }
+        private void Move_LeftQ()
+        {
+            if (Eng_R.Value + Globals.hop <= 127) { Eng_R.Value += Globals.hop; } else { Eng_R.Value += Eng_R.Maximum - Eng_R.Value; }
+        }
+        private void Move_RightE()
+        {
+            if (Eng_L.Value + Globals.hop <= 127) { Eng_L.Value += Globals.hop; } else { Eng_L.Value += Eng_L.Maximum - Eng_L.Value; }
         }
         #endregion
+        #endregion
         #region Useless
+
+        private void BTNSend_Click(object sender, EventArgs e)
+        {
+            //SendReceive("[" + CMDBox.Text + "]");
+        }
+
+        private void CMDBox_TextChanged(object sender, EventArgs e)
+        {
+            //Globals.CMD = Convert.ToString(CMDBox.Text);
+        }
+
+        private void Eng_L_Scroll(object sender, EventArgs e)
+        {
+            //Globals.ENG_L = Eng_L.Value;
+        }
+
+        private void Eng_R_Scroll(object sender, EventArgs e)
+        {
+            //Globals.ENG_R = Eng_R.Value;
+        }
         private void LogBOX_TextChanged(object sender, EventArgs e)
         {
 
