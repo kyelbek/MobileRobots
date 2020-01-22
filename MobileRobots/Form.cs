@@ -16,34 +16,50 @@ namespace MobileRobots
         {
             InitializeComponent();
         }
-        public delegate void InvokeDelegate();
+        //public delegate void InvokeDelegate();
 
-        #region Deklaracje
-        public class Globals
+        // TODO: ---> Parametry Form_Load
+        private void Form_Load(object sender, EventArgs e)
         {
-            public const Int32 port = 8000;
-            public const double time = 5000;
-            public static String IPAddr = "";
-            public static String CMD = "";
-            public static String LED = "";
+            IPBox.Text = "127.0.0.1";
+            Eng_L.Enabled = false;
+            Eng_R.Enabled = false;
+            CMDBox.Enabled = false;
+            CMDBox.Visible = true;
+            BTNSend.Enabled = false;
+            BTNSend.Visible = true;
+            LogBOX.Visible = false;
+            LogBOX.Enabled = false;
+            BTNLogClear.Visible = false;
+            SetTimer(Globals.time);
+        }
+        #region Deklaracje
+
+        TcpClient client;
+        NetworkStream stream;
+        Timer Timer1;
+
+        public class Globals                         // TODO: ---> Klasa zmiennych globalnych
+        {
+            public const Int16 port = 8000;
+            public const Int16 time = 200;           // TODO: ---> Interwał czasowy zegara
+            public static String IPAddr = String.Empty;
+            public static String CMD = String.Empty;
+            public static String LED = String.Empty;
             public static int ENG_L = 0;
             public static int ENG_R = 0;
-            public static String msg_buffer_s = "";
-            public static String msg_buffer_r = "";
-            public static String ResponseString = "";
+            public static String msg_buffer_s = String.Empty;
+            public static String msg_buffer_r = String.Empty;
+            public static String ResponseString = String.Empty;
             public static Int16 Status = 0;
         }
 
-        private static TcpClient client;
-        private static NetworkStream stream;
-        private static Timer Timer1;
-
-        private void SetTimer(double time)
+        private void SetTimer(Int16 time)
         {
             Timer1 = new Timer(time);
             Timer1.Elapsed += Timer1_Event;
             Timer1.AutoReset = true;
-            Timer1.Enabled = true;
+            Timer1.Enabled = false;
         }
         #endregion
 
@@ -57,11 +73,14 @@ namespace MobileRobots
                     client = new TcpClient { SendTimeout = 1000 };
                     client.Connect(IP, port);
                     stream = client.GetStream();
-                    IsConnected();
-                    if (IsConnected() == true)
+                    if (client.Connected == true & Timer1.Enabled == false)
                     {
-                        // TODO: ---> Włączanie/Wyłączanie zegara
-                        SetTimer(Globals.time);
+                        Timer1.Start();     // TODO: ---> Włączanie zegara
+                    }
+                    else
+                    {
+                        Timer1.Stop();
+                        Timer1.Dispose();
                     }
                 }
                 catch (SocketException ex)
@@ -69,11 +88,6 @@ namespace MobileRobots
                     LogBOX.AppendText(ex.Message);
                     LogBOX.AppendText(Environment.NewLine);
                 }
-                //catch (ArgumentNullException ex)
-                //{
-                //    LogBOX.AppendText("ArgumentNullException: " + ex);
-                //    LogBOX.AppendText(Environment.NewLine);
-                //}
             }
             else
             {
@@ -90,9 +104,10 @@ namespace MobileRobots
                 stream.Close();
                 client.Dispose();
                 stream.Dispose();
-                Timer1.Stop();
-                Timer1.Dispose();
-                //IsConnected();
+                if (Timer1.Enabled == true)
+                { 
+                    Timer1.Stop(); 
+                }
             } else 
             {
                 LogBOX.AppendText("Not connected.");
@@ -104,7 +119,9 @@ namespace MobileRobots
         private void Timer1_Event(Object source, ElapsedEventArgs e)
         {
             Build_ControlFrame(Globals.ENG_L, Globals.ENG_R);
-
+            IsConnected();
+            Globals.msg_buffer_r = SendReceive(Globals.msg_buffer_s);
+            Globals.ResponseString = "Sent: " + Globals.msg_buffer_s + "  " + "Received: " + Globals.msg_buffer_r;
         }
 
         // Budowanie ramki do wysłania
@@ -116,8 +133,6 @@ namespace MobileRobots
             else if (LED_R.Checked) { LED = "02"; }
             else { LED = "00"; }
             Globals.msg_buffer_s = "[" + LED + IntToSigHEX(ENG_L) + IntToSigHEX(ENG_R) + "]";
-            Globals.msg_buffer_r = SendReceive(Globals.msg_buffer_s);
-            Globals.ResponseString = "Sent: " + Globals.msg_buffer_s + "  " + "Received: " + Globals.msg_buffer_r;
         }
 
         // Wysylanie i odbieranie ramek
@@ -127,44 +142,23 @@ namespace MobileRobots
             {
                 byte[] msg_s = Encoding.ASCII.GetBytes(msg);
                 stream.Write(msg_s, 0, msg_s.Length);
-                //Invoke("Sent: " + msg);
-                Byte[] msg_r = new Byte[256];
                 String response = String.Empty;
+                Byte[] msg_r = new Byte[28];
                 Int32 bytes = stream.Read(msg_r, 0, msg_r.Length);
                 response = Encoding.ASCII.GetString(msg_r, 0, msg_r.Length);
-                //Invoke("  Received: " + response);
-                //Invoke(Environment.NewLine);
                 return response;
             }
             catch (System.IO.IOException)
-            {
-                Invoke(Environment.NewLine);
+            {;
                 Invoke("Connection interrupted.");
                 Invoke(Environment.NewLine);
+                client.Close();
+                stream.Close();
+                client.Dispose();
+                stream.Dispose();
                 Timer1.Stop();
-                Timer1.Dispose();
-                return null;
+                return String.Empty;
             }
-        }
-
-        private void UpdateUI()
-        {
-            LogBOX.AppendText(Globals.ResponseString);
-            if (Globals.ResponseString.Length >= 25)
-            {   
-                Globals.Status = Convert.ToInt16(Globals.msg_buffer_r.Substring(1, 2));
-                BatteryLevel.Value = Convert.ToInt16(Globals.msg_buffer_r.Substring(3, 4));
-                Sensor1.Value = Convert.ToInt16(Globals.msg_buffer_r.Substring(5, 4));
-                Sensor2.Value = Convert.ToInt16(Globals.msg_buffer_r.Substring(9, 4));
-                Sensor3.Value = Convert.ToInt16(Globals.msg_buffer_r.Substring(13, 4));
-                Sensor4.Value = Convert.ToInt16(Globals.msg_buffer_r.Substring(17, 4));
-                Sensor5.Value = Convert.ToInt16(Globals.msg_buffer_r.Substring(21, 4));
-            }
-            else
-            {
-                LogBOX.AppendText("Za krotki string");
-            }
-            string rdata = "[9913A9817D117D117D117D117D1]";
         }
         #endregion
 
@@ -179,31 +173,56 @@ namespace MobileRobots
                     StatusLabel.Text = "Connected";
                     Eng_L.Enabled = true;
                     Eng_R.Enabled = true;
-                    BatteryLevel.Value = 0;
                     return true;
                 }
-                else
+                else if (client.Connected == false)
                 {
                     StatusLabel.ForeColor = Color.Red;
                     StatusLabel.Text = "Disconnected";
                     Eng_L.Enabled = false;
                     Eng_R.Enabled = false;
-                    BatteryLevel.Value = 50;
                     return false;
-                };
+                } else { return false; }
             }
             catch (NullReferenceException)
             {
-                IPBox.Enabled = true;
                 return false;
             }
         }
 
+        private void UpdateUI()
+        {
+            LogBOX.AppendText(Globals.ResponseString);
+            LogBOX.AppendText(Environment.NewLine);
+            if (Globals.msg_buffer_r.Length == 28)
+            {
+                try
+                {
+                    RStatus.Text = Globals.msg_buffer_r.Substring(1, 2);
+                    BatteryLevel.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(3, 4), 16);
+                    Sensor1.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(7, 4), 16);
+                    Sensor2.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(11, 4), 16);
+                    Sensor3.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(15, 4), 16);
+                    Sensor4.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(19, 4), 16);
+                    Sensor5.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(23, 4), 16);
+                }
+                catch (FormatException)
+                {
+                    LogBOX.AppendText("Invalid response, can't update UI controls.");
+                    LogBOX.AppendText(Environment.NewLine);
+                }
+            }
+            else
+            {
+                LogBOX.AppendText("Invalid response, can't update UI controls.");
+                LogBOX.AppendText(Environment.NewLine);
+            }
+        }
+
+        // TODO: ---> Invoker
         // Dzięki tej metodzie jesteśmy w stanie edytować kontrolkę LogBOX z poziomu innego threadu niż ten, w którym została utworzona (Timer1) bez potencjalnych kolizji i nieprzewidzianych skutków
         // https://stackoverflow.com/questions/13345091/is-it-safe-just-to-set-checkforillegalcrossthreadcalls-to-false-to-avoid-cross-t
         // W przypadku tego programu nieprzewidziane skutki objawiały się jako przemieszane ze sobą dane "Sent: XX  Received: XX", np. "S   Received:XXent:XX"
-
-        // TODO: ---> Invoker
 
         void Invoke(string str)
         {
@@ -213,8 +232,7 @@ namespace MobileRobots
                 LogBOX.AppendText(str);
         }
 
-        // TODO: ---> Konwersja do Signed HEX
-        public static string IntToSigHEX(int integer)
+        public static string IntToSigHEX(int integer)               // TODO: ---> Konwersja signed int do hex przy użyciu metody U2 (Uzupełnień do 2)
         {
             byte[] inbyte = new byte[] { (byte)((sbyte)integer) };
             return BitConverter.ToString(inbyte).Replace("-", "");
@@ -222,20 +240,6 @@ namespace MobileRobots
         #endregion
 
         #region Kontrolki
-        // TODO: ---> Parametry Form_Load
-        private void Form_Load(object sender, EventArgs e)
-        {
-            IPBox.Text = "127.0.0.1";
-            Eng_L.Enabled = false;
-            Eng_R.Enabled = false;
-            CMDBox.Enabled = false;
-            CMDBox.Visible = true;
-            BTNSend.Enabled = false;
-            BTNSend.Visible = true;
-            LogBOX.Visible = false;
-            LogBOX.Enabled = false;
-            BTNLogClear.Visible = false;
-        }
 
         private void Form_Closing(object sender, CancelEventArgs e)
         {
@@ -274,6 +278,7 @@ namespace MobileRobots
                 if (IPBox.Text != "")
                 {
                     Connect(Globals.IPAddr, Globals.port);
+                    IsConnected();
                 }
                 else
                 {
@@ -307,13 +312,11 @@ namespace MobileRobots
 
         private void Eng_L_Scroll(object sender, EventArgs e)
         {
-            // Globals.ENG_L = Convert.ToInt32(Eng_L.Value);
             Globals.ENG_L = Eng_L.Value;
         }
 
         private void Eng_R_Scroll(object sender, EventArgs e)
         {
-            //Globals.ENG_R = Convert.ToInt32(Eng_R.Value);
             Globals.ENG_R = Eng_R.Value;
         }
         #endregion
@@ -380,6 +383,10 @@ namespace MobileRobots
 
         }
         private void Battery_Label_Click(object sender, EventArgs e)
+        {
+
+        }
+        private void RStatus_Click(object sender, EventArgs e)
         {
 
         }

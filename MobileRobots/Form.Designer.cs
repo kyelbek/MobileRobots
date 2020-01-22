@@ -52,6 +52,7 @@
             this.Sensor1 = new System.Windows.Forms.ProgressBar();
             this.Sensor4 = new System.Windows.Forms.ProgressBar();
             this.Sensor5 = new System.Windows.Forms.ProgressBar();
+            this.RStatus = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.Eng_R)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Eng_L)).BeginInit();
             this.SuspendLayout();
@@ -135,7 +136,7 @@
             // 
             this.BatteryLevel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.BatteryLevel.Location = new System.Drawing.Point(628, 10);
-            this.BatteryLevel.Maximum = 32767;
+            this.BatteryLevel.Maximum = 65535;
             this.BatteryLevel.Name = "BatteryLevel";
             this.BatteryLevel.Size = new System.Drawing.Size(160, 23);
             this.BatteryLevel.Step = 1;
@@ -272,7 +273,7 @@
             // Sensor3
             // 
             this.Sensor3.Location = new System.Drawing.Point(148, 218);
-            this.Sensor3.Maximum = 8000;
+            this.Sensor3.Maximum = 65535;
             this.Sensor3.Name = "Sensor3";
             this.Sensor3.Size = new System.Drawing.Size(621, 30);
             this.Sensor3.Step = 1;
@@ -282,7 +283,7 @@
             // Sensor2
             // 
             this.Sensor2.Location = new System.Drawing.Point(148, 158);
-            this.Sensor2.Maximum = 8000;
+            this.Sensor2.Maximum = 65535;
             this.Sensor2.Name = "Sensor2";
             this.Sensor2.Size = new System.Drawing.Size(621, 30);
             this.Sensor2.Step = 1;
@@ -292,7 +293,7 @@
             // Sensor1
             // 
             this.Sensor1.Location = new System.Drawing.Point(148, 98);
-            this.Sensor1.Maximum = 8000;
+            this.Sensor1.Maximum = 65535;
             this.Sensor1.Name = "Sensor1";
             this.Sensor1.Size = new System.Drawing.Size(621, 30);
             this.Sensor1.Step = 1;
@@ -302,7 +303,7 @@
             // Sensor4
             // 
             this.Sensor4.Location = new System.Drawing.Point(148, 278);
-            this.Sensor4.Maximum = 8000;
+            this.Sensor4.Maximum = 65535;
             this.Sensor4.Name = "Sensor4";
             this.Sensor4.Size = new System.Drawing.Size(621, 30);
             this.Sensor4.Step = 1;
@@ -312,12 +313,22 @@
             // Sensor5
             // 
             this.Sensor5.Location = new System.Drawing.Point(148, 338);
-            this.Sensor5.Maximum = 8000;
+            this.Sensor5.Maximum = 65535;
             this.Sensor5.Name = "Sensor5";
             this.Sensor5.Size = new System.Drawing.Size(621, 30);
             this.Sensor5.Step = 1;
             this.Sensor5.TabIndex = 22;
             this.Sensor5.Value = 5;
+            // 
+            // RStatus
+            // 
+            this.RStatus.AutoSize = true;
+            this.RStatus.Location = new System.Drawing.Point(275, 428);
+            this.RStatus.Name = "RStatus";
+            this.RStatus.Size = new System.Drawing.Size(70, 13);
+            this.RStatus.TabIndex = 23;
+            this.RStatus.Text = "Status code: ";
+            this.RStatus.Click += new System.EventHandler(this.RStatus_Click);
             // 
             // Form
             // 
@@ -326,6 +337,7 @@
             this.BackColor = System.Drawing.SystemColors.Control;
             this.CancelButton = this.BTNSTOP;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.RStatus);
             this.Controls.Add(this.BTNSTOP);
             this.Controls.Add(this.BTNSettings);
             this.Controls.Add(this.BTNLog);
@@ -386,6 +398,7 @@
         private System.Windows.Forms.ProgressBar Sensor1;
         private System.Windows.Forms.ProgressBar Sensor4;
         private System.Windows.Forms.ProgressBar Sensor5;
+        private System.Windows.Forms.Label RStatus;
     }
 }
 
