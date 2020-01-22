@@ -75,11 +75,16 @@ namespace MobileRobots
                     client = new TcpClient { SendTimeout = 1000 };
                     client.Connect(IP, port);
                     stream = client.GetStream();
-                    }
+                }
                 catch (SocketException ex)
                 {
                     LogBOX.AppendText(ex.Message);
                     LogBOX.AppendText(Environment.NewLine);
+                }
+                finally
+                {
+                    SafeInvoke(Eng_L, () => { Eng_L.Value = 0; });
+                    SafeInvoke(Eng_R, () => { Eng_R.Value = 0; });
                 }
             } 
             else
