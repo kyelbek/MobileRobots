@@ -4,43 +4,65 @@ using System.Net.Sockets;
 using System.Text;
 using System.Timers;
 using System.ComponentModel;
-
-// TODO: Lepsze sprawdzanie połączenia (W nowym Timerze?)
-// TODO: Spróbować poprawnie rozłączyć połączenie (Żeby w Herculesie pokazywał, że klient został rozłączony)
+using ExtensionMethods;
 
 namespace MobileRobots
 {
     public partial class Form : System.Windows.Forms.Form
     {
+        #region Init
         public Form()
         {
             InitializeComponent();
         }
 
-        #region Deklaracje
-        public class Globals
+        // TODO: ---> Parametry Form_Load
+        private void Form_Load(object sender, EventArgs e)
         {
-            public const Int32 port = 8000;
-            public const double time = 500;
-            public static String IPAddr;
-            public static String CMD;
-            public static String LED;
-            public static int ENG_L;
-            public static int ENG_R;
-            public static String msg_buffer_s;
-            public static String msg_buffer_r;
+            IPBox.Text = "192.168.2.33";
+            CMDBox.Enabled = false;
+            Eng_L.Enabled = false;
+            Eng_R.Enabled = false;
+            CMDBox.Visible = false;
+            BTNSend.Enabled = false;
+            BTNSend.Visible = false;
+            LogBOX.Visible = false;
+            LogBOX.Enabled = false;
+            BTNLogClear.Visible = false;
+            SetTimer(Globals.time);
+        }
+        #endregion
+
+        #region Deklaracje
+
+        TcpClient client;
+        NetworkStream stream;
+        Timer Timer1;
+
+        public class Globals                         // TODO: ---> Klasa zmiennych globalnych
+        {
+            public const Int16 time = 200;
+            public const Int16 port = 8000;
+
+            public const Int16 hop = 7;             // TODO: ---> Skok podczas sterowania klawiszami
+            
+            public static String IPAddr = String.Empty;
+            public static String CMD = String.Empty;
+            public static String LED = String.Empty;
+            public static int ENG_L = 0;
+            public static int ENG_R = 0;
+            public static String msg_buffer_s = String.Empty;
+            public static String msg_buffer_r = String.Empty;
+            public static String ResponseString = String.Empty;
+            public static Int16 Status = 0;
         }
 
-        private static TcpClient client;
-        private static NetworkStream stream;
-        private static Timer Timer1;
-
-        private void SetTimer(double time)
+        private void SetTimer(Int16 time)
         {
             Timer1 = new Timer(time);
             Timer1.Elapsed += Timer1_Event;
-            Timer1.AutoReset = true;
-            Timer1.Enabled = true;
+            Timer1.AutoReset = false;
+            Timer1.Enabled = false;
         }
         #endregion
 
@@ -54,24 +76,18 @@ namespace MobileRobots
                     client = new TcpClient { SendTimeout = 1000 };
                     client.Connect(IP, port);
                     stream = client.GetStream();
-                    IsConnected();
-                    if (IsConnected() == true)
-                    {
-                        // TODO: ---> Włączanie/Wyłączanie zegara
-                        SetTimer(Globals.time);
-                    }
                 }
                 catch (SocketException ex)
                 {
                     LogBOX.AppendText(ex.Message);
                     LogBOX.AppendText(Environment.NewLine);
                 }
-                //catch (ArgumentNullException ex)
-                //{
-                //    LogBOX.AppendText("ArgumentNullException: " + ex);
-                //    LogBOX.AppendText(Environment.NewLine);
-                //}
-            }
+                finally
+                {
+                    SafeInvoke(Eng_L, () => { Eng_L.Value = 0; });
+                    SafeInvoke(Eng_R, () => { Eng_R.Value = 0; });
+                }
+            } 
             else
             {
                 LogBOX.AppendText("Enter IP Address first.");
@@ -83,13 +99,11 @@ namespace MobileRobots
         {
             if (IsConnected() == true)
             {
-                client.Close();
-                client.Dispose();
-                stream.Close();
-                stream.Dispose();
                 Timer1.Stop();
-                Timer1.Dispose();
-                IsConnected();
+                client.Close();
+                stream.Close();
+                client.Dispose();
+                stream.Dispose();
             } else 
             {
                 LogBOX.AppendText("Not connected.");
@@ -100,7 +114,21 @@ namespace MobileRobots
         // Instrukcje wykonywane po przepełnieniu Timer1
         private void Timer1_Event(Object source, ElapsedEventArgs e)
         {
-            Build_ControlFrame(Globals.ENG_L, Globals.ENG_R);
+            try
+            {
+                Timer1.Stop();
+                SafeInvoke(Eng_L, () => { Globals.ENG_L = Eng_L.Value; });
+                SafeInvoke(Eng_R, () => { Globals.ENG_R = Eng_R.Value; });
+                Build_ControlFrame(Globals.ENG_L, Globals.ENG_R);
+                Globals.msg_buffer_r = SendReceive(Globals.msg_buffer_s);
+                Globals.ResponseString = "Sent: " + Globals.msg_buffer_s + "  " + "Received: " + Globals.msg_buffer_r;
+            }
+            finally
+            {
+                UpdateUI();
+                Timer1.Start();
+                IsConnected();
+            }
         }
 
         // Budowanie ramki do wysłania
@@ -111,8 +139,7 @@ namespace MobileRobots
             else if (LED_G.Checked) { LED = "01"; }
             else if (LED_R.Checked) { LED = "02"; }
             else { LED = "00"; }
-            Globals.msg_buffer_s = "[" + LED + IntToSigHEX(ENG_L) + IntToSigHEX(ENG_R) + "]";
-            Globals.msg_buffer_r = SendReceive(Globals.msg_buffer_s);
+            Globals.msg_buffer_s = "[" + LED + U2(ENG_L) + U2(ENG_R) + "]";
         }
 
         // Wysylanie i odbieranie ramek
@@ -122,23 +149,31 @@ namespace MobileRobots
             {
                 byte[] msg_s = Encoding.ASCII.GetBytes(msg);
                 stream.Write(msg_s, 0, msg_s.Length);
-                Invoke("Sent: " + msg);
-                Byte[] msg_r = new Byte[256];
                 String response = String.Empty;
+                Byte[] msg_r = new Byte[28];
                 Int32 bytes = stream.Read(msg_r, 0, msg_r.Length);
                 response = Encoding.ASCII.GetString(msg_r, 0, msg_r.Length);
-                Invoke("  Received: " + response);
-                Invoke(Environment.NewLine);
                 return response;
             }
             catch (System.IO.IOException)
-            {
-                Invoke(Environment.NewLine);
-                Invoke("Connection interrupted.");
-                Invoke(Environment.NewLine);
+            {;
+                SafeInvoke(LogBOX, () => { LogBOX.AppendText("Connection interrupted."); LogBOX.AppendText(Environment.NewLine); }) ;
+                client.Close();
+                stream.Close();
+                client.Dispose();
+                stream.Dispose();
                 Timer1.Stop();
-                Timer1.Dispose();
-                return null;
+                return String.Empty;
+            }
+            catch (ObjectDisposedException)
+            {
+                SafeInvoke(LogBOX, () => { LogBOX.AppendText("Connection interrupted."); LogBOX.AppendText(Environment.NewLine); });
+                client.Close();
+                stream.Close();
+                client.Dispose();
+                stream.Dispose();
+                Timer1.Stop();
+                return String.Empty;
             }
         }
         #endregion
@@ -150,46 +185,88 @@ namespace MobileRobots
             {
                 if (client.Connected == true)
                 {
-                    StatusLabel.ForeColor = Color.Green;
-                    StatusLabel.Text = "Connected";
-                    Eng_L.Enabled = true;
-                    Eng_R.Enabled = true;
-                    BatteryLevel.Value = 0;
+                    SafeInvoke(StatusLabel, () => { StatusLabel.ForeColor = Color.Green; StatusLabel.Text = "Connected"; });
+                    SafeInvoke(Eng_L, () => { Eng_L.Enabled = true; });
+                    SafeInvoke(Eng_R, () => { Eng_R.Enabled = true; });
+                    Timer1.Start();
                     return true;
                 }
                 else
                 {
-                    StatusLabel.ForeColor = Color.Red;
-                    StatusLabel.Text = "Disconnected";
-                    Eng_L.Enabled = false;
-                    Eng_R.Enabled = false;
-                    BatteryLevel.Value = 50;
+                    SafeInvoke(StatusLabel, () => { StatusLabel.ForeColor = Color.Red; StatusLabel.Text = "Disconnected"; });
+                    SafeInvoke(Eng_L, () => { Eng_L.Enabled = false; });
+                    SafeInvoke(Eng_R, () => { Eng_R.Enabled = false; });
+                    Timer1.Stop();
                     return false;
-                };
+                }
             }
-            catch (NullReferenceException)
+            catch (NullReferenceException) 
             {
-                IPBox.Enabled = true;
+                StatusLabel.ForeColor = Color.Red;
+                StatusLabel.Text = "Disconnected";
+                Eng_L.Enabled = false;
+                Eng_R.Enabled = false;
+                Timer1.Stop();
                 return false;
             }
         }
 
-        // Dzięki tej metodzie jesteśmy w stanie edytować kontrolkę LogBOX z poziomu innego threadu niż ten, w którym została utworzona (Timer1) bez potencjalnych kolizji i nieprzewidzianych skutków
+        private void UpdateUI()
+        {
+            SafeInvoke(LogBOX, () => { LogBOX.AppendText(Globals.ResponseString); LogBOX.AppendText(Environment.NewLine); });
+            if (Globals.msg_buffer_r.Length == 28 && Globals.msg_buffer_r.Substring(0, 3) == "[00" & Globals.msg_buffer_r.Substring(27, 1) == "]")
+            {
+                try
+                {
+                    SafeInvoke(RStatus, () => { RStatus.Text = "Status: " + Globals.msg_buffer_r.Substring(1, 2); });
+                    SafeInvoke(BatteryLevel, () => { BatteryLevel.Value = Convert.ToUInt16(Globals.msg_buffer_r.Substring(3, 4), 16); });
+ 
+                    SafeInvoke(Sensor1, () => { if (Convert.ToUInt16(Globals.msg_buffer_r.Substring(7, 4), 16) >= 53255) { Sensor1.Value = Sensor1.Maximum; } else { Sensor1.Value = Convert.ToUInt16(Globals.msg_buffer_r.Substring(7, 4), 16); }; });
+                    SafeInvoke(Sensor2, () => { if (Convert.ToUInt16(Globals.msg_buffer_r.Substring(11, 4), 16) >= 53255) { Sensor2.Value = Sensor2.Maximum; } else { Sensor2.Value = Convert.ToUInt16(Globals.msg_buffer_r.Substring(11, 4), 16); }; });
+                    SafeInvoke(Sensor3, () => { if (Convert.ToUInt16(Globals.msg_buffer_r.Substring(15, 4), 16) >= 53255) { Sensor3.Value = Sensor3.Maximum; } else { Sensor3.Value = Convert.ToUInt16(Globals.msg_buffer_r.Substring(15, 4), 16); }; });
+                    SafeInvoke(Sensor4, () => { if (Convert.ToUInt16(Globals.msg_buffer_r.Substring(19, 4), 16) >= 53255) { Sensor4.Value = Sensor4.Maximum; } else { Sensor4.Value = Convert.ToUInt16(Globals.msg_buffer_r.Substring(19, 4), 16); }; });
+                    SafeInvoke(Sensor5, () => { if (Convert.ToUInt16(Globals.msg_buffer_r.Substring(23, 4), 16) >= 53255) { Sensor5.Value = Sensor5.Maximum; } else { Sensor5.Value = Convert.ToUInt16(Globals.msg_buffer_r.Substring(23, 4), 16); }; });
+
+                    SafeInvoke(label1, () => { label1.Text = "" + Convert.ToUInt16(Globals.msg_buffer_r.Substring(7, 4), 16); });
+                    SafeInvoke(label2, () => { label2.Text = "" + Convert.ToUInt16(Globals.msg_buffer_r.Substring(11, 4), 16); });
+                    SafeInvoke(label3, () => { label3.Text = "" + Convert.ToUInt16(Globals.msg_buffer_r.Substring(15, 4), 16); });
+                    SafeInvoke(label4, () => { label4.Text = "" + Convert.ToUInt16(Globals.msg_buffer_r.Substring(19, 4), 16); });
+                    SafeInvoke(label5, () => { label5.Text = "" + Convert.ToUInt16(Globals.msg_buffer_r.Substring(23, 4), 16); });
+
+                }
+                catch (FormatException)
+                {
+                    SafeInvoke(LogBOX, () => { LogBOX.AppendText("Invalid response, can't update UI controls."); LogBOX.AppendText(Environment.NewLine); });
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    //SafeInvoke(Sensor1, () => { Sensor1.Value = 20000; });
+                    //SafeInvoke(Sensor2, () => { Sensor2.Value = 20000; });
+                    //SafeInvoke(Sensor3, () => { Sensor3.Value = 20000; });
+                    //SafeInvoke(Sensor4, () => { Sensor4.Value = 20000; });
+                    //SafeInvoke(Sensor5, () => { Sensor5.Value = 20000; });
+                }
+            }
+            else
+            {
+                SafeInvoke(LogBOX, () => { LogBOX.AppendText("Invalid response, can't update UI controls."); LogBOX.AppendText(Environment.NewLine); });
+            }
+        }
+
+        // TODO: ---> SafeInvoke
+        // Dzięki tej metodzie jesteśmy w stanie edytować kontrolkę LogBOX z poziomu innego threadu (Timer1) niż ten, w którym została utworzona (Form) bez potencjalnych kolizji i nieprzewidzianych skutków
         // https://stackoverflow.com/questions/13345091/is-it-safe-just-to-set-checkforillegalcrossthreadcalls-to-false-to-avoid-cross-t
         // W przypadku tego programu nieprzewidziane skutki objawiały się jako przemieszane ze sobą dane "Sent: XX  Received: XX", np. "S   Received:XXent:XX"
 
-        // TODO: ---> Invoker
-
-        void Invoke(string str)
+        public static void SafeInvoke(System.Windows.Forms.Control control, System.Action action)
         {
-            if (LogBOX.InvokeRequired)
-                LogBOX.Invoke(new Action<string>(Invoke), str);
+            if (control.InvokeRequired)
+                control.Invoke(new System.Windows.Forms.MethodInvoker(() => { action(); }));
             else
-                LogBOX.AppendText(str);
+                action();
         }
 
-        // TODO: ---> Konwersja do Signed HEX
-        public static string IntToSigHEX(int integer)
+        public static string U2(int integer)               // TODO: ---> Konwersja signed int do hex przy użyciu metody U2 (Uzupełnień do 2)
         {
             byte[] inbyte = new byte[] { (byte)((sbyte)integer) };
             return BitConverter.ToString(inbyte).Replace("-", "");
@@ -197,20 +274,6 @@ namespace MobileRobots
         #endregion
 
         #region Kontrolki
-        // TODO: ---> Parametry Form_Load
-        private void Form_Load(object sender, EventArgs e)
-        {
-            IPBox.Text = "192.168.2.2";
-            Eng_L.Enabled = false;
-            Eng_R.Enabled = false;
-            CMDBox.Enabled = false;
-            CMDBox.Visible = true;
-            BTNSend.Enabled = false;
-            BTNSend.Visible = true;
-            LogBOX.Visible = false;
-            LogBOX.Enabled = false;
-            BTNLogClear.Visible = false;
-        }
 
         private void Form_Closing(object sender, CancelEventArgs e)
         {
@@ -220,11 +283,9 @@ namespace MobileRobots
                 Timer1.Dispose();
         }
 
-        // TODO ---> STOP AWARYJNY
+        // TODO ---> STOP
         private void BTNSTOP_Click(object sender, EventArgs e)
         {
-            Globals.ENG_L = 0;
-            Globals.ENG_R = 0;
             Eng_L.Value = 0;
             Eng_R.Value = 0;
             LED_G.Checked = false;
@@ -249,62 +310,20 @@ namespace MobileRobots
                 if (IPBox.Text != "")
                 {
                     Connect(Globals.IPAddr, Globals.port);
+                    IsConnected();
                 }
                 else
                 {
                     LogBOX.AppendText("Error. Make sure you entered proper IP address and host is reachable.");
                     LogBOX.AppendText(Environment.NewLine);
                 }
-
             }
         }
 
         private void BTNDisconnect_Click(object sender, EventArgs e)
         {
             Disconnect();
-        }
-
-        private void IPBox_TextChanged(object sender, EventArgs e)
-        {
-            Globals.IPAddr = IPBox.Text;
-        }
-
-        private void BTNSend_Click(object sender, EventArgs e)
-        {
-            SendReceive("[" + CMDBox.Text + "]");
-        }
-
-        private void CMDBox_TextChanged(object sender, EventArgs e)
-        {
-            Globals.CMD = Convert.ToString(CMDBox.Text);
-        }
-
-        private void Eng_L_Scroll(object sender, EventArgs e)
-        {
-            // Globals.ENG_L = Convert.ToInt32(Eng_L.Value);
-            Globals.ENG_L = Eng_L.Value;
-        }
-
-        private void Eng_R_Scroll(object sender, EventArgs e)
-        {
-            //Globals.ENG_R = Convert.ToInt32(Eng_R.Value);
-            Globals.ENG_R = Eng_R.Value;
-        }
-        #endregion
-
-        #region Test
-        private void BTNIsConnected_Click(object sender, EventArgs e)
-        {
-            if (client == null)
-            {
-                LogBOX.AppendText("Connected:" + "False");               
-            }
-            else
-            {
-                IsConnected();
-                LogBOX.AppendText("Connected:" + client.Connected);
-            }
-            LogBOX.AppendText(Environment.NewLine);     
+            IsConnected();
         }
 
         private void BTNLog_Click(object sender, EventArgs e)
@@ -325,18 +344,103 @@ namespace MobileRobots
             }
         }
 
-        private void LogBOX_TextChanged(object sender, EventArgs e)
+        private void IPBox_TextChanged(object sender, EventArgs e)
         {
-            CMDBox.Text = Globals.msg_buffer_s;
-        }
-
-        private void BTNSettings_Click(object sender, EventArgs e)
-        {
-
+            Globals.IPAddr = IPBox.Text;
         }
         #endregion
 
+        #region Ruch klawiszami (Bonus)
+        private void Form_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            if (e.Control && e.KeyCode.ToString() == "W") { Move_Forward(); }
+            if (e.Control && e.KeyCode.ToString() == "S") { Move_Backward(); }
+            if (e.Control && e.KeyCode.ToString() == "A") { Move_Left(); }
+            if (e.Control && e.KeyCode.ToString() == "D") { Move_Right(); }
+
+            if (e.Control && e.KeyCode.ToString() == "Q") { Move_LeftQ(); }
+            if (e.Control && e.KeyCode.ToString() == "E") { Move_RightE(); }
+            if (e.Control && e.KeyCode.ToString() == "C") { Move_LeftB(); }
+            if (e.Control && e.KeyCode.ToString() == "Z") { Move_RightB(); }
+
+            if (e.Control && e.KeyCode == System.Windows.Forms.Keys.Space) { Move_Stop(); }
+        }
+
+        private void Move_Forward()
+        {
+            if (Eng_L.Value + Globals.hop <= 127) { Eng_L.Value += Globals.hop; } else { Eng_L.Value += Eng_L.Maximum - Eng_L.Value; }
+            if (Eng_R.Value + Globals.hop <= 127) { Eng_R.Value += Globals.hop; } else { Eng_R.Value += Eng_R.Maximum - Eng_R.Value; }
+        }
+        private void Move_Backward()
+        {
+            if (Eng_L.Value - Globals.hop >= -128) { Eng_L.Value -= Globals.hop; } else { Eng_L.Value -= Math.Abs(Eng_L.Minimum) - Math.Abs(Eng_L.Value); }
+            if (Eng_R.Value - Globals.hop >= -128) { Eng_R.Value -= Globals.hop; } else { Eng_R.Value -= Math.Abs(Eng_R.Minimum) - Math.Abs(Eng_R.Value); }
+        }
+        private void Move_Left()
+        {
+            if (Eng_L.Value - Globals.hop >= -128) { Eng_L.Value -= Globals.hop; } else { Eng_L.Value -= Math.Abs(Eng_L.Minimum) - Math.Abs(Eng_L.Value); }
+            if (Eng_R.Value + Globals.hop <= 127) { Eng_R.Value += Globals.hop; } else { Eng_R.Value += Eng_R.Maximum - Eng_R.Value; }
+        }
+        private void Move_Right()
+        {
+            if (Eng_L.Value + Globals.hop <= 127) { Eng_L.Value += Globals.hop; } else { Eng_L.Value += Eng_L.Maximum - Eng_L.Value; }
+            if (Eng_R.Value - Globals.hop >= -128) { Eng_R.Value -= Globals.hop; } else { Eng_R.Value -= Math.Abs(Eng_R.Minimum) - Math.Abs(Eng_R.Value); }
+        }
+        private void Move_LeftQ()
+        {
+            if (Eng_R.Value + Globals.hop <= 127) { Eng_R.Value += Globals.hop; } else { Eng_R.Value += Eng_R.Maximum - Eng_R.Value; }
+        }
+        private void Move_RightE()
+        {
+            if (Eng_L.Value + Globals.hop <= 127) { Eng_L.Value += Globals.hop; } else { Eng_L.Value += Eng_L.Maximum - Eng_L.Value; }
+        }
+        private void Move_LeftB()
+        {
+            if (Eng_R.Value + Globals.hop <= 127) { Eng_R.Value -= Globals.hop; } else { Eng_R.Value -= Eng_R.Maximum - Eng_R.Value; }
+        }
+        private void Move_RightB()
+        {
+            if (Eng_L.Value + Globals.hop <= 127) { Eng_L.Value -= Globals.hop; } else { Eng_L.Value -= Eng_L.Maximum - Eng_L.Value; }
+        }
+        private void Move_Stop()
+        {
+            Eng_L.Value = 0;
+            Eng_R.Value = 0;
+        }
+        #endregion
+
+        #region Test
+        private void BTNIsConnected_Click(object sender, EventArgs e)
+        {
+            UpdateUI();
+        }
+        
+        #endregion
         #region Useless
+
+        private void BTNSend_Click(object sender, EventArgs e)
+        {
+            //SendReceive("[" + CMDBox.Text + "]");
+        }
+
+        private void CMDBox_TextChanged(object sender, EventArgs e)
+        {
+            //Globals.CMD = Convert.ToString(CMDBox.Text);
+        }
+
+        private void Eng_L_Scroll(object sender, EventArgs e)
+        {
+            //Globals.ENG_L = Eng_L.Value;
+        }
+
+        private void Eng_R_Scroll(object sender, EventArgs e)
+        {
+            //Globals.ENG_R = Eng_R.Value;
+        }
+        private void LogBOX_TextChanged(object sender, EventArgs e)
+        {
+
+        }
         private void StatusLabel_Click(object sender, EventArgs e)
         {
 
@@ -357,6 +461,15 @@ namespace MobileRobots
         {
 
         }
+        private void RStatus_Click(object sender, EventArgs e)
+        {
+
+        }
         #endregion
+
+        private void Sensor1_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
