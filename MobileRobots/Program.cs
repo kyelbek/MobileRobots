@@ -4,6 +4,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+namespace ExtensionMethods
+{
+    public static class x
+    {
+        public static decimal Map(this decimal value, decimal fromSource, decimal toSource, decimal fromTarget, decimal toTarget)
+        {
+            return (value - fromSource) / (toSource - fromSource) * (toTarget - fromTarget) + fromTarget;
+        }
+    }
+}
+
 namespace MobileRobots
 {
     static class Program

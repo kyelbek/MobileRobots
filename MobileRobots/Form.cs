@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Timers;
 using System.ComponentModel;
+using ExtensionMethods;
 
 namespace MobileRobots
 {
@@ -18,7 +19,7 @@ namespace MobileRobots
         // TODO: ---> Parametry Form_Load
         private void Form_Load(object sender, EventArgs e)
         {
-            IPBox.Text = "127.0.0.1";
+            IPBox.Text = "192.168.2.33";
             CMDBox.Enabled = false;
             Eng_L.Enabled = false;
             Eng_R.Enabled = false;
@@ -40,10 +41,10 @@ namespace MobileRobots
 
         public class Globals                         // TODO: ---> Klasa zmiennych globalnych
         {
-            public const Int16 time = 300;
+            public const Int16 time = 200;
             public const Int16 port = 8000;
 
-            public const Int16 hop = 5;             // TODO: ---> Skok podczas sterowania klawiszami
+            public const Int16 hop = 7;             // TODO: ---> Skok podczas sterowania klawiszami
             
             public static String IPAddr = String.Empty;
             public static String CMD = String.Empty;
@@ -218,16 +219,32 @@ namespace MobileRobots
                 try
                 {
                     SafeInvoke(RStatus, () => { RStatus.Text = "Status: " + Globals.msg_buffer_r.Substring(1, 2); });
-                    SafeInvoke(BatteryLevel, () => { BatteryLevel.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(3, 4), 16); });
-                    SafeInvoke(Sensor1, () => { Sensor1.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(7, 4), 16); });
-                    SafeInvoke(Sensor2, () => { Sensor2.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(11, 4), 16); });
-                    SafeInvoke(Sensor3, () => { Sensor3.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(15, 4), 16); });
-                    SafeInvoke(Sensor4, () => { Sensor4.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(19, 4), 16); });
-                    SafeInvoke(Sensor5, () => { Sensor5.Value = Convert.ToInt32(Globals.msg_buffer_r.Substring(23, 4), 16); });
+                    SafeInvoke(BatteryLevel, () => { BatteryLevel.Value = Convert.ToUInt16(Globals.msg_buffer_r.Substring(3, 4), 16); });
+ 
+                    SafeInvoke(Sensor1, () => { if (Convert.ToUInt16(Globals.msg_buffer_r.Substring(7, 4), 16) >= 53255) { Sensor1.Value = Sensor1.Maximum; } else { Sensor1.Value = Convert.ToUInt16(Globals.msg_buffer_r.Substring(7, 4), 16); }; });
+                    SafeInvoke(Sensor2, () => { if (Convert.ToUInt16(Globals.msg_buffer_r.Substring(11, 4), 16) >= 53255) { Sensor2.Value = Sensor2.Maximum; } else { Sensor2.Value = Convert.ToUInt16(Globals.msg_buffer_r.Substring(11, 4), 16); }; });
+                    SafeInvoke(Sensor3, () => { if (Convert.ToUInt16(Globals.msg_buffer_r.Substring(15, 4), 16) >= 53255) { Sensor3.Value = Sensor3.Maximum; } else { Sensor3.Value = Convert.ToUInt16(Globals.msg_buffer_r.Substring(15, 4), 16); }; });
+                    SafeInvoke(Sensor4, () => { if (Convert.ToUInt16(Globals.msg_buffer_r.Substring(19, 4), 16) >= 53255) { Sensor4.Value = Sensor4.Maximum; } else { Sensor4.Value = Convert.ToUInt16(Globals.msg_buffer_r.Substring(19, 4), 16); }; });
+                    SafeInvoke(Sensor5, () => { if (Convert.ToUInt16(Globals.msg_buffer_r.Substring(23, 4), 16) >= 53255) { Sensor5.Value = Sensor5.Maximum; } else { Sensor5.Value = Convert.ToUInt16(Globals.msg_buffer_r.Substring(23, 4), 16); }; });
+
+                    SafeInvoke(label1, () => { label1.Text = "" + Convert.ToUInt16(Globals.msg_buffer_r.Substring(7, 4), 16); });
+                    SafeInvoke(label2, () => { label2.Text = "" + Convert.ToUInt16(Globals.msg_buffer_r.Substring(11, 4), 16); });
+                    SafeInvoke(label3, () => { label3.Text = "" + Convert.ToUInt16(Globals.msg_buffer_r.Substring(15, 4), 16); });
+                    SafeInvoke(label4, () => { label4.Text = "" + Convert.ToUInt16(Globals.msg_buffer_r.Substring(19, 4), 16); });
+                    SafeInvoke(label5, () => { label5.Text = "" + Convert.ToUInt16(Globals.msg_buffer_r.Substring(23, 4), 16); });
+
                 }
                 catch (FormatException)
                 {
                     SafeInvoke(LogBOX, () => { LogBOX.AppendText("Invalid response, can't update UI controls."); LogBOX.AppendText(Environment.NewLine); });
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    //SafeInvoke(Sensor1, () => { Sensor1.Value = 20000; });
+                    //SafeInvoke(Sensor2, () => { Sensor2.Value = 20000; });
+                    //SafeInvoke(Sensor3, () => { Sensor3.Value = 20000; });
+                    //SafeInvoke(Sensor4, () => { Sensor4.Value = 20000; });
+                    //SafeInvoke(Sensor5, () => { Sensor5.Value = 20000; });
                 }
             }
             else
@@ -269,8 +286,6 @@ namespace MobileRobots
         // TODO ---> STOP
         private void BTNSTOP_Click(object sender, EventArgs e)
         {
-            //Globals.ENG_L = 0;
-            //Globals.ENG_R = 0;
             Eng_L.Value = 0;
             Eng_R.Value = 0;
             LED_G.Checked = false;
@@ -451,5 +466,10 @@ namespace MobileRobots
 
         }
         #endregion
+
+        private void Sensor1_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
