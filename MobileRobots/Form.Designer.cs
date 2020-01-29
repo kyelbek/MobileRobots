@@ -38,9 +38,6 @@
             this.BatteryLevel = new System.Windows.Forms.ProgressBar();
             this.BTNLogClear = new System.Windows.Forms.Button();
             this.StatusLabel = new System.Windows.Forms.Label();
-            this.BTNSend = new System.Windows.Forms.Button();
-            this.CMDBox = new System.Windows.Forms.TextBox();
-            this.BTNIsConnected = new System.Windows.Forms.Button();
             this.Eng_R = new System.Windows.Forms.TrackBar();
             this.Eng_L = new System.Windows.Forms.TrackBar();
             this.Battery_Label = new System.Windows.Forms.Label();
@@ -52,11 +49,6 @@
             this.Sensor4 = new System.Windows.Forms.ProgressBar();
             this.Sensor5 = new System.Windows.Forms.ProgressBar();
             this.RStatus = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.Eng_R)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Eng_L)).BeginInit();
             this.SuspendLayout();
@@ -172,39 +164,6 @@
             this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.StatusLabel.Click += new System.EventHandler(this.StatusLabel_Click);
             // 
-            // BTNSend
-            // 
-            this.BTNSend.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BTNSend.Location = new System.Drawing.Point(512, 10);
-            this.BTNSend.Name = "BTNSend";
-            this.BTNSend.Size = new System.Drawing.Size(75, 23);
-            this.BTNSend.TabIndex = 9;
-            this.BTNSend.Text = "Send";
-            this.BTNSend.UseVisualStyleBackColor = true;
-            this.BTNSend.Click += new System.EventHandler(this.BTNSend_Click);
-            // 
-            // CMDBox
-            // 
-            this.CMDBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.CMDBox.CharacterCasing = System.Windows.Forms.CharacterCasing.Upper;
-            this.CMDBox.Location = new System.Drawing.Point(372, 12);
-            this.CMDBox.MaxLength = 6;
-            this.CMDBox.Name = "CMDBox";
-            this.CMDBox.Size = new System.Drawing.Size(134, 20);
-            this.CMDBox.TabIndex = 10;
-            this.CMDBox.TextChanged += new System.EventHandler(this.CMDBox_TextChanged);
-            // 
-            // BTNIsConnected
-            // 
-            this.BTNIsConnected.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.BTNIsConnected.Location = new System.Drawing.Point(12, 423);
-            this.BTNIsConnected.Name = "BTNIsConnected";
-            this.BTNIsConnected.Size = new System.Drawing.Size(75, 23);
-            this.BTNIsConnected.TabIndex = 11;
-            this.BTNIsConnected.Text = "Check";
-            this.BTNIsConnected.UseVisualStyleBackColor = true;
-            this.BTNIsConnected.Click += new System.EventHandler(this.BTNIsConnected_Click);
-            // 
             // Eng_R
             // 
             this.Eng_R.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -213,7 +172,7 @@
             this.Eng_R.Minimum = -128;
             this.Eng_R.Name = "Eng_R";
             this.Eng_R.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.Eng_R.Size = new System.Drawing.Size(45, 354);
+            this.Eng_R.Size = new System.Drawing.Size(45, 383);
             this.Eng_R.TabIndex = 12;
             this.Eng_R.TickFrequency = 20;
             this.Eng_R.Scroll += new System.EventHandler(this.Eng_R_Scroll);
@@ -227,7 +186,7 @@
             this.Eng_L.Name = "Eng_L";
             this.Eng_L.Orientation = System.Windows.Forms.Orientation.Vertical;
             this.Eng_L.RightToLeftLayout = true;
-            this.Eng_L.Size = new System.Drawing.Size(45, 354);
+            this.Eng_L.Size = new System.Drawing.Size(45, 383);
             this.Eng_L.TabIndex = 13;
             this.Eng_L.TickFrequency = 20;
             this.Eng_L.Scroll += new System.EventHandler(this.Eng_L_Scroll);
@@ -244,7 +203,7 @@
             // 
             // BTNLog
             // 
-            this.BTNLog.Location = new System.Drawing.Point(93, 423);
+            this.BTNLog.Location = new System.Drawing.Point(113, 423);
             this.BTNLog.Name = "BTNLog";
             this.BTNLog.Size = new System.Drawing.Size(75, 23);
             this.BTNLog.TabIndex = 15;
@@ -324,51 +283,6 @@
             this.RStatus.Text = "Status code: ";
             this.RStatus.Click += new System.EventHandler(this.RStatus_Click);
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(353, 63);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(35, 13);
-            this.label1.TabIndex = 24;
-            this.label1.Text = "label1";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(409, 63);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(35, 13);
-            this.label2.TabIndex = 25;
-            this.label2.Text = "label2";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(471, 63);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(35, 13);
-            this.label3.TabIndex = 26;
-            this.label3.Text = "label3";
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(527, 63);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(35, 13);
-            this.label4.TabIndex = 27;
-            this.label4.Text = "label4";
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(579, 63);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(35, 13);
-            this.label5.TabIndex = 28;
-            this.label5.Text = "label5";
-            // 
             // Form
             // 
             this.AcceptButton = this.BTNConnect;
@@ -376,20 +290,12 @@
             this.BackColor = System.Drawing.SystemColors.Control;
             this.CancelButton = this.BTNSTOP;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
             this.Controls.Add(this.RStatus);
             this.Controls.Add(this.BTNSTOP);
             this.Controls.Add(this.BTNLog);
             this.Controls.Add(this.Battery_Label);
             this.Controls.Add(this.Eng_L);
             this.Controls.Add(this.Eng_R);
-            this.Controls.Add(this.BTNIsConnected);
-            this.Controls.Add(this.CMDBox);
-            this.Controls.Add(this.BTNSend);
             this.Controls.Add(this.StatusLabel);
             this.Controls.Add(this.BTNLogClear);
             this.Controls.Add(this.BatteryLevel);
@@ -429,9 +335,6 @@
         private System.Windows.Forms.ProgressBar BatteryLevel;
         private System.Windows.Forms.Button BTNLogClear;
         private System.Windows.Forms.Label StatusLabel;
-        private System.Windows.Forms.Button BTNSend;
-        private System.Windows.Forms.TextBox CMDBox;
-        private System.Windows.Forms.Button BTNIsConnected;
         private System.Windows.Forms.TrackBar Eng_R;
         private System.Windows.Forms.TrackBar Eng_L;
         private System.Windows.Forms.Label Battery_Label;
@@ -443,11 +346,6 @@
         private System.Windows.Forms.ProgressBar Sensor4;
         private System.Windows.Forms.ProgressBar Sensor5;
         private System.Windows.Forms.Label RStatus;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label5;
     }
 }
 

@@ -20,12 +20,8 @@ namespace MobileRobots
         private void Form_Load(object sender, EventArgs e)
         {
             IPBox.Text = "192.168.2.33";
-            CMDBox.Enabled = false;
             Eng_L.Enabled = false;
             Eng_R.Enabled = false;
-            CMDBox.Visible = false;
-            BTNSend.Enabled = false;
-            BTNSend.Visible = false;
             LogBOX.Visible = false;
             LogBOX.Enabled = false;
             BTNLogClear.Visible = false;
@@ -226,13 +222,6 @@ namespace MobileRobots
                     SafeInvoke(Sensor3, () => { if (Convert.ToUInt16(Globals.msg_buffer_r.Substring(15, 4), 16) >= 53255) { Sensor3.Value = Sensor3.Maximum; } else { Sensor3.Value = Convert.ToUInt16(Globals.msg_buffer_r.Substring(15, 4), 16); }; });
                     SafeInvoke(Sensor4, () => { if (Convert.ToUInt16(Globals.msg_buffer_r.Substring(19, 4), 16) >= 53255) { Sensor4.Value = Sensor4.Maximum; } else { Sensor4.Value = Convert.ToUInt16(Globals.msg_buffer_r.Substring(19, 4), 16); }; });
                     SafeInvoke(Sensor5, () => { if (Convert.ToUInt16(Globals.msg_buffer_r.Substring(23, 4), 16) >= 53255) { Sensor5.Value = Sensor5.Maximum; } else { Sensor5.Value = Convert.ToUInt16(Globals.msg_buffer_r.Substring(23, 4), 16); }; });
-
-                    SafeInvoke(label1, () => { label1.Text = "" + Convert.ToUInt16(Globals.msg_buffer_r.Substring(7, 4), 16); });
-                    SafeInvoke(label2, () => { label2.Text = "" + Convert.ToUInt16(Globals.msg_buffer_r.Substring(11, 4), 16); });
-                    SafeInvoke(label3, () => { label3.Text = "" + Convert.ToUInt16(Globals.msg_buffer_r.Substring(15, 4), 16); });
-                    SafeInvoke(label4, () => { label4.Text = "" + Convert.ToUInt16(Globals.msg_buffer_r.Substring(19, 4), 16); });
-                    SafeInvoke(label5, () => { label5.Text = "" + Convert.ToUInt16(Globals.msg_buffer_r.Substring(23, 4), 16); });
-
                 }
                 catch (FormatException)
                 {
@@ -420,22 +409,19 @@ namespace MobileRobots
 
         private void BTNSend_Click(object sender, EventArgs e)
         {
-            //SendReceive("[" + CMDBox.Text + "]");
         }
 
         private void CMDBox_TextChanged(object sender, EventArgs e)
         {
-            //Globals.CMD = Convert.ToString(CMDBox.Text);
         }
 
         private void Eng_L_Scroll(object sender, EventArgs e)
         {
-            //Globals.ENG_L = Eng_L.Value;
         }
 
         private void Eng_R_Scroll(object sender, EventArgs e)
         {
-            //Globals.ENG_R = Eng_R.Value;
+
         }
         private void LogBOX_TextChanged(object sender, EventArgs e)
         {
